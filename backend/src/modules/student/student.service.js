@@ -16,6 +16,11 @@ const getStudentReport = async (studentId, semester, yearId) => {
 
   const scoreWhere = { student_id: Number(studentId), semester: Number(semester) };
   const targetYearId = yearId ? Number(yearId) : student.class_instance?.year_id;
+  const enrollment = targetYearId ? await prisma.studentEnrollment.findFirst({
+    where: { student_id: Number(studentId), year_id: targetYearId },
+    include: { class_instance: { include: { class: true, year: true } } },
+  }) : null;
+  if (targetYearId && !enrollment) throw { statusCode: 404, message: 'Học sinh không thuộc năm học này' };
   if (targetYearId) {
     scoreWhere.year_id = targetYearId;
   }
@@ -116,8 +121,8 @@ const getStudentReport = async (studentId, semester, yearId) => {
       student_id: student.student_id,
       full_name: student.user.full_name,
       student_code: student.student_code,
-      class: student.class_instance ? `${student.class_instance.grade}${student.class_instance.class.class_code}` : null,
-      year: student.class_instance?.year?.name,
+      class: enrollment ? `${enrollment.class_instance.grade}${enrollment.class_instance.class.class_code}` : null,
+      year: enrollment?.class_instance.year?.name,
     },
     semester,
     subjects,

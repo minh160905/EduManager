@@ -8,9 +8,9 @@ import dayjs from 'dayjs';
 const { Text, Paragraph } = Typography;
 
 const STATUS_CONFIG = {
-  PENDING: { color: '#F59E0B', label: '⏳ Chờ duyệt' },
-  APPROVED: { color: '#10B981', label: '✅ Đã duyệt' },
-  REJECTED: { color: '#EF4444', label: '❌ Từ chối' },
+  PENDING: { color: 'var(--warning)', label: ' Chờ duyệt' },
+  APPROVED: { color: 'var(--success)', label: ' Đã duyệt' },
+  REJECTED: { color: 'var(--danger)', label: ' Từ chối' },
 };
 
 /** Render Cloudinary file: image -> thumbnail with preview, others -> link */
@@ -34,12 +34,12 @@ const CloudinaryFilePreview = ({ files }) => {
           <a key={i} href={f.file_url} target="_blank" rel="noreferrer"
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              background: '#EFF6FF', border: '1px solid #BFDBFE',
-              borderRadius: 8, padding: '10px 14px', color: '#1D4ED8',
+              background: 'var(--info-soft)', border: '1px solid #BFDBFE',
+              borderRadius: 8, padding: '10px 14px', color: 'var(--info)',
               textDecoration: 'none', fontSize: 13,
             }}>
             {f.file_type?.includes('pdf')
-              ? <FilePdfOutlined style={{ color: '#EF4444' }} />
+              ? <FilePdfOutlined style={{ color: 'var(--danger)' }} />
               : <FileOutlined />}
             <span>Minh chứng {i + 1}</span>
             <LinkOutlined style={{ fontSize: 10, opacity: 0.6 }} />
@@ -80,7 +80,7 @@ export default function ChildAchievementsPage() {
     {
       title: 'Tiêu đề thành tích',
       dataIndex: 'title',
-      render: t => <Text strong style={{ color: '#111827' }}>{t}</Text>
+      render: t => <Text strong style={{ color: 'var(--text-primary)' }}>{t}</Text>
     },
     {
       title: 'Thể loại',
@@ -89,18 +89,18 @@ export default function ChildAchievementsPage() {
     },
     {
       title: 'Ngày gửi',
-      render: (_, r) => <Text style={{ color: '#6B7280', fontSize: 12 }}>{dayjs(r.submitted_at).format('DD/MM/YYYY')}</Text>
+      render: (_, r) => <Text style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{dayjs(r.submitted_at).format('DD/MM/YYYY')}</Text>
     },
     {
       title: 'Minh chứng',
       render: (_, r) => r.files?.length > 0
         ? <Tag color="cyan" icon={<FileOutlined />}>{r.files.length} file</Tag>
-        : <Text style={{ color: '#6B7280' }}>—</Text>,
+        : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
     {
       title: 'Trạng thái',
       render: (_, r) => {
-        const cfg = STATUS_CONFIG[r.status] || { color: '#6B7280', label: r.status };
+        const cfg = STATUS_CONFIG[r.status] || { color: 'var(--text-secondary)', label: r.status };
         return <span style={{ color: cfg.color, fontWeight: 600 }}>{cfg.label}</span>;
       },
     },
@@ -108,14 +108,14 @@ export default function ChildAchievementsPage() {
       title: 'Nhận xét',
       render: (_, r) => r.comments?.length > 0
         ? <Tag color="blue">{r.comments.length} nhận xét</Tag>
-        : <Text style={{ color: '#6B7280' }}>—</Text>,
+        : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
     {
       title: 'Thao tác',
       align: 'center',
       render: (_, r) => (
         <Button size="small" icon={<EyeOutlined />} onClick={() => setDetailItem(r)}
-          style={{ borderRadius: 6, borderColor: '#4F46E5', color: '#4F46E5' }}>
+          style={{ borderRadius: 6, borderColor: 'var(--primary)', color: 'var(--primary)' }}>
           Chi tiết
         </Button>
       ),
@@ -125,7 +125,7 @@ export default function ChildAchievementsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>🏆 Thành tích của con</h1>
+        <h1>Thành tích của con</h1>
         <p>Theo dõi và xem các thành tích, khen thưởng đã đạt được của con em</p>
       </div>
 
@@ -147,8 +147,7 @@ export default function ChildAchievementsPage() {
           </div>
 
           {!selectedStudentId ? (
-            <div style={{ textAlign: 'center', padding: 60, color: '#6B7280' }}>
-              <div style={{ fontSize: 48 }}>🧑‍🎓</div>
+            <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-secondary)' }}>
               <div style={{ marginTop: 12 }}>Chọn con em để xem thành tích</div>
             </div>
           ) : achievementsLoading ? (
@@ -156,16 +155,15 @@ export default function ChildAchievementsPage() {
           ) : error ? (
             <Alert message="Không thể tải danh sách thành tích" type="error" showIcon />
           ) : (
-            <div style={{ background: '#fff', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, padding: 24 }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 12, padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <Text strong style={{ color: '#4F46E5', fontSize: 16 }}>
-                  📋 Danh sách thành tích ({achievements.length})
+                <Text strong style={{ color: 'var(--primary)', fontSize: 16 }}>
+                   Danh sách thành tích ({achievements.length})
                 </Text>
               </div>
 
               {achievements.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>
-                  <div style={{ fontSize: 36, marginBottom: 8 }}>🏆</div>
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
                   <div>Chưa có thành tích nào được gửi hoặc phê duyệt</div>
                 </div>
               ) : (
@@ -188,7 +186,7 @@ export default function ChildAchievementsPage() {
       <Modal
         open={!!detailItem}
         onCancel={() => setDetailItem(null)}
-        title={<span style={{ color: '#111827', fontSize: 16, fontWeight: 700 }}>🏆 Chi tiết thành tích</span>}
+        title={<span style={{ color: 'var(--text-primary)', fontSize: 16, fontWeight: 700 }}> Chi tiết thành tích</span>}
         footer={null}
         width={600}
         destroyOnClose
@@ -196,7 +194,7 @@ export default function ChildAchievementsPage() {
         {detailItem && (
           <div style={{ marginTop: 16 }}>
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
                 {detailItem.title}
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -204,23 +202,23 @@ export default function ChildAchievementsPage() {
                 <span style={{ color: STATUS_CONFIG[detailItem.status]?.color, fontWeight: 600 }}>
                   {STATUS_CONFIG[detailItem.status]?.label}
                 </span>
-                <span style={{ color: '#6B7280', fontSize: 12, marginLeft: 'auto' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 12, marginLeft: 'auto' }}>
                   Gửi ngày: {dayjs(detailItem.submitted_at).format('DD/MM/YYYY')}
                 </span>
               </div>
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <Text strong style={{ color: '#4F46E5', display: 'block', marginBottom: 6 }}>Mô tả:</Text>
-              <Paragraph style={{ color: '#374151', background: '#F3F4F6', border: '1px solid #E5E7EB', padding: 12, borderRadius: 8 }}>
+              <Text strong style={{ color: 'var(--primary)', display: 'block', marginBottom: 6 }}>Mô tả:</Text>
+              <Paragraph style={{ color: 'var(--text-secondary)', background: 'var(--border-soft)', border: '1px solid var(--border)', padding: 12, borderRadius: 8 }}>
                 {detailItem.description || 'Không có mô tả chi tiết'}
               </Paragraph>
             </div>
 
             {detailItem.files?.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <Text strong style={{ color: '#4F46E5', display: 'block', marginBottom: 6 }}>
-                  ☁️ Tài liệu minh chứng ({detailItem.files.length}):
+                <Text strong style={{ color: 'var(--primary)', display: 'block', marginBottom: 6 }}>
+                   Tài liệu minh chứng ({detailItem.files.length}):
                 </Text>
                 <CloudinaryFilePreview files={detailItem.files} />
               </div>
@@ -228,11 +226,11 @@ export default function ChildAchievementsPage() {
 
             {detailItem.comments?.length > 0 && (
               <div>
-                <Text strong style={{ color: '#4F46E5', display: 'block', marginBottom: 8 }}>💬 Nhận xét từ giáo viên:</Text>
+                <Text strong style={{ color: 'var(--primary)', display: 'block', marginBottom: 8 }}> Nhận xét từ giáo viên:</Text>
                 {detailItem.comments.map((c, i) => (
-                  <div key={i} style={{ background: '#EEF2FF', border: '1px solid #E0E7FF', borderRadius: 8, padding: 10, marginBottom: 8 }}>
-                    <Text strong style={{ color: '#4F46E5', fontSize: 13 }}>{c.teacher?.full_name}</Text>
-                    <Paragraph style={{ color: '#374151', margin: '4px 0 0' }}>{c.comment}</Paragraph>
+                  <div key={i} style={{ background: 'var(--primary-soft)', border: '1px solid var(--primary-soft)', borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                    <Text strong style={{ color: 'var(--primary)', fontSize: 13 }}>{c.teacher?.full_name}</Text>
+                    <Paragraph style={{ color: 'var(--text-secondary)', margin: '4px 0 0' }}>{c.comment}</Paragraph>
                   </div>
                 ))}
               </div>

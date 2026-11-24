@@ -18,9 +18,9 @@ export default function ParentSchedulePage() {
     return (
       <div>
         <div className="page-header">
-          <h1>📅 Thời khoá biểu</h1>
+          <h1>Thời khoá biểu</h1>
         </div>
-        <div style={{ color: '#6B7280', textAlign: 'center', padding: 60 }}>
+        <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 60 }}>
           Chưa có thông tin lớp học của con.
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function ParentSchedulePage() {
     key: String(idx),
     label: (
       <span>
-        👦 {child.child_name}
+         {child.child_name}
       </span>
     ),
   }));
@@ -44,7 +44,7 @@ export default function ParentSchedulePage() {
   return (
     <div>
       <div className="page-header">
-        <h1>📅 Thời khoá biểu</h1>
+        <h1>Thời khoá biểu</h1>
         <p>Lịch học của con em bạn</p>
       </div>
 
@@ -67,7 +67,7 @@ export default function ParentSchedulePage() {
         </div>
       )}
 
-      <div style={{ background: 'rgba(30,27,75,0.4)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 12, padding: 16 }}>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16 }}>
         <TimetableGrid
           schedules={schedules}
           loading={isLoading}
@@ -79,8 +79,8 @@ export default function ParentSchedulePage() {
       {/* Teacher details Modal */}
       <Modal
         title={
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#4F46E5' }}>
-            📇 Thông tin giáo viên bộ môn
+          <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--primary)' }}>
+             Thông tin giáo viên bộ môn
           </span>
         }
         open={!!selectedLesson}
@@ -94,7 +94,7 @@ export default function ParentSchedulePage() {
             <Avatar
               size={64}
               style={{
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
                 fontWeight: 700,
                 fontSize: 24,
               }}
@@ -103,7 +103,7 @@ export default function ParentSchedulePage() {
             </Avatar>
 
             <div style={{ textAlign: 'center', marginBottom: 12 }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
                 {selectedLesson.teacher?.full_name}
               </div>
               <Tag color="blue" style={{ marginTop: 4, borderRadius: 6 }}>
@@ -111,32 +111,32 @@ export default function ParentSchedulePage() {
               </Tag>
             </div>
 
-            <div style={{ width: '100%', background: '#F8FAFF', border: '1px solid #E0E7FF', borderRadius: 12, padding: 16 }}>
+            <div style={{ width: '100%', background: 'var(--bg-page)', border: '1px solid var(--primary-soft)', borderRadius: 12, padding: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <BookOutlined style={{ color: '#4F46E5', fontSize: 16 }} />
+                <BookOutlined style={{ color: 'var(--primary)', fontSize: 16 }} />
                 <div>
-                  <div style={{ color: '#6B7280', fontSize: 11 }}>Môn học</div>
-                  <div style={{ color: '#111827', fontWeight: 600, fontSize: 13 }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Môn học</div>
+                  <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13 }}>
                     {selectedLesson.subject?.subject_name}
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <MailOutlined style={{ color: '#4F46E5', fontSize: 16 }} />
+                <MailOutlined style={{ color: 'var(--primary)', fontSize: 16 }} />
                 <div>
-                  <div style={{ color: '#6B7280', fontSize: 11 }}>Email liên hệ</div>
-                  <div style={{ color: '#111827', fontWeight: 600, fontSize: 13 }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Email liên hệ</div>
+                  <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13 }}>
                     {selectedLesson.teacher?.email || 'Chưa cập nhật'}
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <PhoneOutlined style={{ color: '#4F46E5', fontSize: 16 }} />
+                <PhoneOutlined style={{ color: 'var(--primary)', fontSize: 16 }} />
                 <div>
-                  <div style={{ color: '#6B7280', fontSize: 11 }}>Số điện thoại</div>
-                  <div style={{ color: '#111827', fontWeight: 600, fontSize: 13 }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Số điện thoại</div>
+                  <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13 }}>
                     {selectedLesson.teacher?.phone || 'Chưa cập nhật'}
                   </div>
                 </div>

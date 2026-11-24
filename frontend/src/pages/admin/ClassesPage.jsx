@@ -10,20 +10,21 @@ import dayjs from 'dayjs';
 const { Text } = Typography;
 
 const getScoreStyle = (v) => {
-  if (v === null || v === undefined) return { color: '#9CA3AF' };
-  if (v >= 8) return { color: '#10B981', fontWeight: 700 };
-  if (v < 5) return { color: '#EF4444', fontWeight: 700 };
-  return { color: '#111827', fontWeight: 500 };
+  if (v === null || v === undefined) return { color: 'var(--text-muted)' };
+  if (v >= 8) return { color: 'var(--success)', fontWeight: 700 };
+  if (v < 5) return { color: 'var(--danger)', fontWeight: 700 };
+  return { color: 'var(--text-primary)', fontWeight: 500 };
 };
 
 const getConductTag = (rating) => {
-  const colors = {
-    'Tốt': 'green',
-    'Khá': 'blue',
-    'Trung bình': 'warning',
-    'Yếu': 'error'
+  const ratings = {
+    WEAK: { label: 'Yếu', color: 'error' },
+    AVERAGE: { label: 'Trung bình', color: 'warning' },
+    GOOD: { label: 'Khá', color: 'blue' },
+    EXCELLENT: { label: 'Tốt', color: 'green' },
   };
-  return <Tag color={colors[rating] || 'default'} style={{ fontWeight: 600, fontSize: 13 }}>{rating || 'Chưa đánh giá'}</Tag>;
+  const display = ratings[rating];
+  return <Tag color={display?.color || 'default'} style={{ fontWeight: 600, fontSize: 13 }}>{display?.label || 'Chưa đánh giá'}</Tag>;
 };
 
 export default function ClassesPage() {
@@ -135,37 +136,39 @@ export default function ClassesPage() {
   // ── Student table columns in Drawer ───────────────────────────────────────
   const studentColumns = [
     {
-      title: '#', dataIndex: 'student_code', width: 90,
-      render: v => <Text style={{ color: '#6B7280', fontSize: 12 }}>{v || '—'}</Text>,
+      title: 'Mã HS', dataIndex: 'student_code', width: 130,
+      render: v => <Text style={{ color: 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>{v || '—'}</Text>,
     },
     {
       title: 'Học sinh',
+      width: 240,
       render: (_, r) => (
         <Space>
           <Avatar
             size={36}
             style={{
-              background: r.user?.gender === 'Nữ'
+              background: r.gender === 'Nữ'
                 ? 'linear-gradient(135deg, #EC4899, #F472B6)'
-                : 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                : 'linear-gradient(135deg, var(--primary), var(--accent))',
               fontWeight: 700, fontSize: 14, flexShrink: 0,
             }}
           >
             {r.user?.full_name?.[0] || '?'}
           </Avatar>
           <div>
-            <div style={{ color: '#111827', fontWeight: 600, fontSize: 14 }}>{r.user?.full_name || '—'}</div>
-            <div style={{ color: '#6B7280', fontSize: 12 }}>@{r.user?.username}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>{r.user?.full_name || '—'} {r.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>@{r.user?.username}</div>
           </div>
         </Space>
       ),
     },
     {
-      title: 'Ngày sinh', dataIndex: 'date_of_birth',
-      render: v => <Text style={{ color: '#94A3B8', fontSize: 13 }}>{v ? dayjs(v).format('DD/MM/YYYY') : '—'}</Text>,
+      title: 'Ngày sinh', dataIndex: 'date_of_birth', width: 125,
+      render: v => <Text style={{ color: 'var(--text-muted)', fontSize: 13, whiteSpace: 'nowrap' }}>{v ? dayjs(v).format('DD/MM/YYYY') : '—'}</Text>,
     },
     {
       title: 'Giới tính', dataIndex: 'gender',
+      width: 90,
       render: v => v ? (
         <Tag
           color={v === 'Nữ' ? 'pink' : 'blue'}
@@ -174,26 +177,29 @@ export default function ClassesPage() {
         >
           {v}
         </Tag>
-      ) : <Text style={{ color: '#475569' }}>—</Text>,
+      ) : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
     {
       title: 'Quê quán', dataIndex: 'hometown',
+      width: 120,
       render: v => v
-        ? <Text style={{ color: '#94A3B8', fontSize: 13 }}><EnvironmentOutlined style={{ marginRight: 4 }} />{v}</Text>
-        : <Text style={{ color: '#475569' }}>—</Text>,
+        ? <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}><EnvironmentOutlined style={{ marginRight: 4 }} />{v}</Text>
+        : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
     {
       title: 'Phụ huynh',
+      width: 190,
       render: (_, r) => {
         const parentNames = r.parents?.map(p => p.parent?.user?.full_name).filter(Boolean).join(', ');
-        return <Text style={{ color: '#4B5563', fontSize: 13 }}>{parentNames || '—'}</Text>;
+        return <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{parentNames || '—'}</Text>;
       }
     },
     {
       title: 'SĐT Phụ huynh',
+      width: 135,
       render: (_, r) => {
         const parentPhones = r.parents?.map(p => p.parent?.user?.phone).filter(Boolean).join(', ');
-        return <Text style={{ color: '#4B5563', fontSize: 13 }}>{parentPhones || '—'}</Text>;
+        return <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{parentPhones || '—'}</Text>;
       }
     },
   ];
@@ -206,10 +212,10 @@ export default function ClassesPage() {
     { title: 'TX3', dataIndex: 'tx3', render: (v) => <span style={getScoreStyle(v)}>{v ?? '—'}</span> },
     { title: 'TX4', dataIndex: 'tx4', render: (v) => <span style={getScoreStyle(v)}>{v ?? '—'}</span> },
     { title: 'TX5', dataIndex: 'tx5', render: (v) => <span style={getScoreStyle(v)}>{v ?? '—'}</span> },
-    { title: 'TB TX', dataIndex: 'tx_avg', render: (v) => <span style={{ ...getScoreStyle(v), background: '#F3F4F6', padding: '2px 6px', borderRadius: 4 }}>{v ?? '—'}</span> },
+    { title: 'TB TX', dataIndex: 'tx_avg', render: (v) => <span style={{ ...getScoreStyle(v), background: 'var(--border-soft)', padding: '2px 6px', borderRadius: 4 }}>{v ?? '—'}</span> },
     { title: 'GK', dataIndex: 'gk', render: (v) => <span style={getScoreStyle(v)}>{v ?? '—'}</span> },
     { title: 'CK', dataIndex: 'ck', render: (v) => <span style={getScoreStyle(v)}>{v ?? '—'}</span> },
-    { title: 'ĐTB', dataIndex: 'dtb', render: (v) => <span style={{ ...getScoreStyle(v), color: v >= 8 ? '#10B981' : v < 5 ? '#EF4444' : '#4F46E5', fontSize: 15 }}>{v ?? '—'}</span> },
+    { title: 'ĐTB', dataIndex: 'dtb', render: (v) => <span style={{ ...getScoreStyle(v), color: v >= 8 ? 'var(--success)' : v < 5 ? 'var(--danger)' : 'var(--primary)', fontSize: 15 }}>{v ?? '—'}</span> },
   ];
 
   const conductColumns = [
@@ -221,11 +227,11 @@ export default function ClassesPage() {
   ];
 
   const instanceColumns = [
-    { title: 'Lớp', render: (_, r) => <Text strong style={{ color: '#4F46E5', fontSize: 16 }}>{r.grade}{r.class?.class_code}</Text>, width: 80 },
+    { title: 'Lớp', render: (_, r) => <Text strong style={{ color: 'var(--primary)', fontSize: 16 }}>{r.grade}{r.class?.class_code}</Text>, width: 80 },
     { title: 'Năm học', render: (_, r) => <Tag color="purple">{r.year?.name}</Tag> },
     { title: 'Khối', dataIndex: 'grade', render: v => <Tag>{v}</Tag> },
-    { title: 'GVCN', render: (_, r) => <Text style={{ color: '#111827' }}>{r.homeroom_teacher?.full_name || '—'}</Text> },
-    { title: 'Sĩ số', render: (_, r) => <Tag color="blue">{r._count?.students || 0} học sinh</Tag> },
+    { title: 'GVCN', render: (_, r) => <Text style={{ color: 'var(--text-primary)' }}>{r.homeroom_teacher?.full_name || '—'}</Text> },
+    { title: 'Sĩ số', render: (_, r) => <Tag color="blue">{r._count?.enrollments || 0} học sinh</Tag> },
     {
       title: 'Thao tác', render: (_, r) => (
         <Space>
@@ -233,13 +239,13 @@ export default function ClassesPage() {
             size="small"
             icon={<EyeOutlined />}
             onClick={() => openStudentsDrawer(r)}
-            style={{ borderRadius: 6, borderColor: '#10B981', color: '#10B981' }}
+            style={{ borderRadius: 6, borderColor: 'var(--success)', color: 'var(--success)' }}
           >
             Xem chi tiết
           </Button>
           {!isPrincipal && (
             <Button size="small" icon={<EditOutlined />} onClick={() => openInstanceModal(r)}
-              style={{ borderRadius: 6, borderColor: '#4F46E5', color: '#4F46E5' }}>Sửa</Button>
+              style={{ borderRadius: 6, borderColor: 'var(--primary)', color: 'var(--primary)' }}>Sửa</Button>
           )}
         </Space>
       ),
@@ -251,7 +257,7 @@ export default function ClassesPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>🏫 Quản lý lớp học</h1>
+        <h1>Quản lý lớp học</h1>
         <p>Quản lý lớp học, năm học và gán giáo viên chủ nhiệm</p>
       </div>
 
@@ -259,40 +265,40 @@ export default function ClassesPage() {
         defaultActiveKey="instances"
         items={[
           {
-            key: 'instances', label: '📚 Lớp học theo năm',
+            key: 'instances', label: 'Lớp học theo năm',
             children: (
               <div>
                 {!isPrincipal && (
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openInstanceModal()}>Thêm lớp</Button>
                     <Button icon={<PlusOutlined />} onClick={() => setClassModal(true)}>Thêm mã lớp</Button>
                     <Button icon={<CalendarOutlined />} onClick={() => setYearModal(true)}>Thêm năm học</Button>
                   </div>
                 )}
                 <Table dataSource={instances} columns={instanceColumns} rowKey="class_instance_id" loading={isLoading}
-                  pagination={{ pageSize: 20 }} size="middle" />
+                  pagination={{ pageSize: 20 }} scroll={{ x: 800 }} size="middle" />
               </div>
             ),
           },
           {
-            key: 'classes', label: '🔑 Mã lớp',
+            key: 'classes', label: 'Mã lớp',
             children: (
               <div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {classes.map(c => (
                     <div key={c.class_id} style={{
-                      background: '#EEF2FF', border: '1px solid #C7D2FE',
+                      background: 'var(--primary-soft)', border: '1px solid var(--primary-border)',
                       borderRadius: 12, padding: '16px 24px', minWidth: 100, textAlign: 'center',
                     }}>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: '#4F46E5' }}>{c.class_code}</div>
-                      <div style={{ color: '#6B7280', fontSize: 12 }}>Lớp {c.class_code}</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>{c.class_code}</div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Lớp {c.class_code}</div>
                     </div>
                   ))}
                   {!isPrincipal && (
                     <button onClick={() => setClassModal(true)} style={{
-                      background: '#F8FAFF', border: '2px dashed #C7D2FE',
+                      background: 'var(--bg-page)', border: '2px dashed var(--primary-border)',
                       borderRadius: 12, padding: '16px 24px', minWidth: 100, cursor: 'pointer',
-                      color: '#4F46E5', fontSize: 24,
+                      color: 'var(--primary)', fontSize: 24,
                     }}>+</button>
                   )}
                 </div>
@@ -300,17 +306,17 @@ export default function ClassesPage() {
             ),
           },
           {
-            key: 'years', label: '📅 Năm học',
+            key: 'years', label: 'Năm học',
             children: (
               <div>
                 {years.map(y => (
                   <div key={y.year_id} style={{
                     display: 'flex', alignItems: 'center', gap: 16,
-                    background: '#fff', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                    background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
                     borderRadius: 10, padding: '14px 20px', marginBottom: 10,
                   }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: '#4F46E5', minWidth: 120 }}>{y.name}</div>
-                    <div style={{ color: '#94A3B8', fontSize: 13, flex: 1 }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', minWidth: 120 }}>{y.name}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 13, flex: 1 }}>
                       {new Date(y.start_date).toLocaleDateString('vi-VN')} → {new Date(y.end_date).toLocaleDateString('vi-VN')}
                     </div>
                     <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
@@ -318,7 +324,7 @@ export default function ClassesPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>Học kỳ I:</span>
                         <Tag color={y.is_locked_sem1 ? 'red' : 'green'} style={{ borderRadius: 6, padding: '2px 8px', fontSize: 12, margin: 0 }}>
-                          {y.is_locked_sem1 ? '🔒 Khóa' : '🔓 Mở'}
+                          {y.is_locked_sem1 ? ' Khóa' : ' Mở'}
                         </Tag>
                         {!isPrincipal && (
                           <Button
@@ -339,7 +345,7 @@ export default function ClassesPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>Học kỳ II:</span>
                         <Tag color={y.is_locked_sem2 ? 'red' : 'green'} style={{ borderRadius: 6, padding: '2px 8px', fontSize: 12, margin: 0 }}>
-                          {y.is_locked_sem2 ? '🔒 Khóa' : '🔓 Mở'}
+                          {y.is_locked_sem2 ? ' Khóa' : ' Mở'}
                         </Tag>
                         {!isPrincipal && (
                           <Button
@@ -363,7 +369,7 @@ export default function ClassesPage() {
             ),
           },
         ]}
-        style={{ background: '#fff', padding: 20, borderRadius: 12, border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+        style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       />
 
       {/* ── Drawer: Danh sách học sinh ── */}
@@ -373,27 +379,19 @@ export default function ClassesPage() {
         width={780}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: 12,
-              background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 20, flexShrink: 0,
-            }}>
-              🏫
-            </div>
             <div>
-              <div style={{ color: '#111827', fontWeight: 700, fontSize: 17 }}>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 17 }}>
                 Lớp {classLabel} – {activeInstance?.year?.name}
               </div>
-              <div style={{ color: '#4F46E5', fontSize: 12, fontWeight: 500 }}>
+              <div style={{ color: 'var(--primary)', fontSize: 12, fontWeight: 500 }}>
                 GVCN: {activeInstance?.homeroom_teacher?.full_name || 'Chưa phân công'}
               </div>
             </div>
           </div>
         }
         styles={{
-          header: { background: '#fff', borderBottom: '1px solid #E5E7EB' },
-          body: { background: '#F8FAFF', padding: '20px' },
+          header: { background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' },
+          body: { background: 'var(--bg-page)', padding: '20px' },
         }}
       >
         {studentsLoading ? (
@@ -417,27 +415,27 @@ export default function ClassesPage() {
               items={[
                 {
                   key: 'students',
-                  label: '👥 Học sinh & Phụ huynh',
+                  label: 'Học sinh & Phụ huynh',
                   children: studentsList.length === 0 ? (
                     <Empty
-                      description={<span style={{ color: '#6B7280' }}>Lớp <strong style={{ color: '#4F46E5' }}>{classLabel}</strong> chưa có học sinh nào</span>}
+                      description={<span style={{ color: 'var(--text-secondary)' }}>Lớp <strong style={{ color: 'var(--primary)' }}>{classLabel}</strong> chưa có học sinh nào</span>}
                       style={{ padding: 40 }}
                     />
                   ) : (
                     <>
                       {/* Summary stats */}
-                      <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                      <div className="summary-strip" style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
                         {[
-                          { label: 'Tổng học sinh', value: studentsList.length, color: '#4F46E5', bg: 'rgba(79,70,229,0.15)', border: 'rgba(79,70,229,0.3)' },
-                          { label: 'Học sinh Nam', value: studentsList.filter(s => s.user?.gender === 'Nam').length, color: '#60A5FA', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)' },
-                          { label: 'Học sinh Nữ', value: studentsList.filter(s => s.user?.gender === 'Nữ').length, color: '#F472B6', bg: 'rgba(244,114,182,0.1)', border: 'rgba(244,114,182,0.3)' },
+                          { label: 'Tổng học sinh', value: studentsList.length, color: 'var(--primary)', bg: 'rgba(79,70,229,0.15)', border: 'rgba(79,70,229,0.3)' },
+                          { label: 'Học sinh Nam', value: studentsList.filter(s => s.gender === 'Nam').length, color: '#60A5FA', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)' },
+                          { label: 'Học sinh Nữ', value: studentsList.filter(s => s.gender === 'Nữ').length, color: '#F472B6', bg: 'rgba(244,114,182,0.1)', border: 'rgba(244,114,182,0.3)' },
                         ].map((stat, i) => (
                           <div key={i} style={{
                             flex: 1, background: stat.bg, border: `1px solid ${stat.border}`,
                             borderRadius: 12, padding: '14px 16px', textAlign: 'center',
                           }}>
                             <div style={{ color: stat.color, fontSize: 28, fontWeight: 800 }}>{stat.value}</div>
-                            <div style={{ color: '#94A3B8', fontSize: 12 }}>{stat.label}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{stat.label}</div>
                           </div>
                         ))}
                       </div>
@@ -448,6 +446,7 @@ export default function ClassesPage() {
                         columns={studentColumns}
                         rowKey="student_id"
                         pagination={{ pageSize: 10, showTotal: t => `${t} học sinh` }}
+                        scroll={{ x: 1030 }}
                         size="middle"
                         style={{ borderRadius: 12, overflow: 'hidden' }}
                       />
@@ -456,7 +455,7 @@ export default function ClassesPage() {
                 },
                 {
                   key: 'scores',
-                  label: '📝 Bảng điểm lớp',
+                  label: 'Bảng điểm lớp',
                   children: (
                     <div>
                       <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
@@ -486,6 +485,7 @@ export default function ClassesPage() {
                           columns={scoreColumns}
                           rowKey="student_id"
                           pagination={false}
+                          scroll={{ x: 780 }}
                           size="small"
                           style={{ borderRadius: 12, overflow: 'hidden' }}
                         />
@@ -495,7 +495,7 @@ export default function ClassesPage() {
                 },
                 {
                   key: 'conducts',
-                  label: '🏅 Hạnh kiểm lớp',
+                  label: 'Hạnh kiểm lớp',
                   children: (
                     <div>
                       <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
@@ -517,6 +517,7 @@ export default function ClassesPage() {
                           columns={conductColumns}
                           rowKey="student_id"
                           pagination={false}
+                          scroll={{ x: 660 }}
                           size="small"
                           style={{ borderRadius: 12, overflow: 'hidden' }}
                         />
@@ -532,7 +533,7 @@ export default function ClassesPage() {
 
       {/* Instance Modal */}
       <Modal open={instanceModal} onCancel={() => setInstanceModal(false)}
-        title={<span style={{ color: '#111827' }}>{editInstance ? 'Cập nhật lớp học' : 'Thêm lớp học mới'}</span>}
+        title={<span style={{ color: 'var(--text-primary)' }}>{editInstance ? 'Cập nhật lớp học' : 'Thêm lớp học mới'}</span>}
         footer={null} destroyOnClose>
         <Form form={instanceForm} layout="vertical" onFinish={submitInstance} style={{ marginTop: 16 }}>
           <Form.Item name="grade" label="Khối" rules={[{ required: true }]}>
@@ -558,7 +559,7 @@ export default function ClassesPage() {
       </Modal>
 
       {/* Class Modal */}
-      <Modal open={classModal} onCancel={() => setClassModal(false)} title={<span style={{ color: '#111827' }}>Thêm mã lớp</span>} footer={null} destroyOnClose>
+      <Modal open={classModal} onCancel={() => setClassModal(false)} title={<span style={{ color: 'var(--text-primary)' }}>Thêm mã lớp</span>} footer={null} destroyOnClose>
         <Form form={classForm} layout="vertical" onFinish={(v) => createClass.mutate(v)} style={{ marginTop: 16 }}>
           <Form.Item name="class_code" label="Mã lớp (ví dụ: A, B, C)" rules={[{ required: true }]}>
             <Input placeholder="A" maxLength={5} />
@@ -571,7 +572,7 @@ export default function ClassesPage() {
       </Modal>
 
       {/* Year Modal */}
-      <Modal open={yearModal} onCancel={() => setYearModal(false)} title={<span style={{ color: '#111827' }}>Thêm năm học</span>} footer={null} destroyOnClose>
+      <Modal open={yearModal} onCancel={() => setYearModal(false)} title={<span style={{ color: 'var(--text-primary)' }}>Thêm năm học</span>} footer={null} destroyOnClose>
         <Form form={yearForm} layout="vertical" onFinish={(v) => createYear.mutate(v)} style={{ marginTop: 16 }}>
           <Form.Item name="name" label="Tên năm học (VD: 2024-2025)" rules={[{ required: true }]}>
             <Input placeholder="2024-2025" />

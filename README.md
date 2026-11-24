@@ -22,7 +22,7 @@ Hệ thống web hoàn chỉnh quản lý học sinh THPT với 4 vai trò: Admi
 ## 🚀 Hướng dẫn cài đặt
 
 ### Yêu cầu
-- Node.js >= 18
+- Node.js >= 22.15 (backend dùng `--use-system-ca` để xác thực HTTPS)
 - MySQL 8.0 (đang chạy)
 - npm >= 9
 
@@ -58,6 +58,8 @@ node prisma/seed.js
 # Chạy server
 npm run dev
 ```
+
+Để bổ sung dữ liệu mẫu cho năm 2025–2026 và 2026–2027 mà vẫn giữ dữ liệu cũ, xem [hướng dẫn dữ liệu mẫu nhiều năm](backend/prisma/SEED_MULTI_YEAR.md). Không chạy lại `prisma/seed.js` trên database đang dùng vì file đó xóa dữ liệu trước khi tạo lại.
 
 Server sẽ chạy tại: http://localhost:5000
 

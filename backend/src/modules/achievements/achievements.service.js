@@ -1,36 +1,38 @@
 const prisma = require('../../config/prisma');
 const cloudinary = require('../../config/cloudinary');
+const { assertClassAccess, hasSchoolWideAccess } = require('../../utils/access');
 
 const create = async (data, studentUserId, files = []) => {
   // Get student id from user
   const student = await prisma.student.findUnique({ where: { user_id: Number(studentUserId) } });
   if (!student) throw { statusCode: 404, message: 'Student profile not found' };
 
-  const achievement = await prisma.achievement.create({
-    data: {
-      student_id: student.student_id,
-      title: data.title,
-      description: data.description || null,
-      category: data.category || null,
-      status: 'PENDING',
-    },
-  });
-
-  // Save Cloudinary file info
-  if (files.length > 0) {
-    await prisma.achievementFile.createMany({
-      data: files.map(f => ({
-        achievement_id: achievement.achievement_id,
-        // Cloudinary provides `path` (secure URL) and `filename` (public_id)
-        file_url: f.path,           // full Cloudinary HTTPS URL
-        file_type: f.mimetype || 'unknown',
-      })),
+  return prisma.$transaction(async (tx) => {
+    const achievement = await tx.achievement.create({
+      data: {
+        student_id: student.student_id,
+        title: data.title,
+        description: data.description || null,
+        category: data.category || null,
+        status: 'PENDING',
+      },
     });
-  }
 
-  return prisma.achievement.findUnique({
-    where: { achievement_id: achievement.achievement_id },
-    include: { files: true, student: { include: { user: { select: { full_name: true } } } } },
+    // Save Cloudinary file info
+    if (files.length > 0) {
+      await tx.achievementFile.createMany({
+        data: files.map((file) => ({
+          achievement_id: achievement.achievement_id,
+          file_url: file.path,
+          file_type: file.mimetype || 'unknown',
+        })),
+      });
+    }
+
+    return tx.achievement.findUnique({
+      where: { achievement_id: achievement.achievement_id },
+      include: { files: true, student: { include: { user: { select: { full_name: true } } } } },
+    });
   });
 };
 
@@ -39,7 +41,7 @@ const getAll = async (filters = {}, user) => {
 
   if (user.role === 'STUDENT') {
     const student = await prisma.student.findUnique({ where: { user_id: user.userId } });
-    if (student) where.student_id = student.student_id;
+    where.student_id = student ? student.student_id : -1;
   } else if (user.role === 'PARENT') {
     const parent = await prisma.parent.findUnique({
       where: { user_id: user.userId },
@@ -57,6 +59,8 @@ const getAll = async (filters = {}, user) => {
       } else {
         where.student_id = { in: parentStudentIds };
       }
+    } else {
+      where.student_id = -1;
     }
   } else if (['TEACHER', 'HEAD_OF_DEPARTMENT'].includes(user.role)) {
     // GVCN only sees achievements of students in their homeroom classes
@@ -119,24 +123,36 @@ const review = async (id, status, teacherUserId, comment) => {
     throw { statusCode: 400, message: 'Status must be APPROVED or REJECTED' };
   }
 
-  const updated = await prisma.achievement.update({
-    where: { achievement_id: Number(id) },
-    data: { status, reviewed_by: teacherUserId, reviewed_at: new Date() },
-    include: { student: { include: { user: { select: { full_name: true } } } } },
-  });
-
-  if (comment) {
-    await prisma.achievementComment.create({
-      data: { achievement_id: Number(id), teacher_id: teacherUserId, comment },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.achievement.update({
+      where: { achievement_id: Number(id) },
+      data: { status, reviewed_by: Number(teacherUserId), reviewed_at: new Date() },
+      include: { student: { include: { user: { select: { full_name: true } } } } },
     });
-  }
 
-  return updated;
+    if (comment && String(comment).trim()) {
+      await tx.achievementComment.create({
+        data: { achievement_id: Number(id), teacher_id: Number(teacherUserId), comment: String(comment).trim() },
+      });
+    }
+
+    return updated;
+  });
 };
 
-const addComment = async (id, teacherUserId, comment) => {
+const addComment = async (id, user, comment) => {
+  const achievement = await prisma.achievement.findUnique({
+    where: { achievement_id: Number(id) },
+    select: { student: { select: { class_instance_id: true } } },
+  });
+  if (!achievement) throw { statusCode: 404, message: 'Achievement not found' };
+  if (!comment || !String(comment).trim()) {
+    throw { statusCode: 400, message: 'Nội dung bình luận không được để trống' };
+  }
+  await assertClassAccess(user, achievement.student.class_instance_id, { homeroomOnly: true });
+
   return prisma.achievementComment.create({
-    data: { achievement_id: Number(id), teacher_id: Number(teacherUserId), comment },
+    data: { achievement_id: Number(id), teacher_id: Number(user.userId), comment: String(comment).trim() },
     include: { teacher: { select: { full_name: true } } },
   });
 };
@@ -144,9 +160,27 @@ const addComment = async (id, teacherUserId, comment) => {
 /**
  * Delete a file from Cloudinary by its public_id derived from file_url
  */
-const deleteFile = async (fileId) => {
-  const file = await prisma.achievementFile.findUnique({ where: { file_id: Number(fileId) } });
+const deleteFile = async (fileId, user) => {
+  const file = await prisma.achievementFile.findUnique({
+    where: { file_id: Number(fileId) },
+    include: {
+      achievement: {
+        include: {
+          student: { select: { user_id: true, class_instance_id: true } },
+        },
+      },
+    },
+  });
   if (!file) throw { statusCode: 404, message: 'File not found' };
+
+  if (user.role === 'STUDENT') {
+    const ownsFile = file.achievement.student.user_id === Number(user.userId);
+    if (!ownsFile || file.achievement.status !== 'PENDING') {
+      throw { statusCode: 403, message: 'Bạn chỉ có thể xóa file của thành tích đang chờ duyệt của mình' };
+    }
+  } else if (!hasSchoolWideAccess(user)) {
+    await assertClassAccess(user, file.achievement.student.class_instance_id, { homeroomOnly: true });
+  }
 
   // Extract public_id from Cloudinary URL
   // URL format: https://res.cloudinary.com/<cloud>/image/upload/v<ver>/<folder>/<public_id>.<ext>

@@ -33,7 +33,7 @@ export default function NotificationsPage() {
     <div>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>🔔 Thông báo</h1>
+          <h1>Thông báo</h1>
           <p>{unread > 0 ? `${unread} thông báo chưa đọc` : 'Tất cả đã đọc'}</p>
         </div>
         {unread > 0 && (
@@ -49,8 +49,8 @@ export default function NotificationsPage() {
       ) : notifs.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 60 }}>
           <Empty
-            image={<BellOutlined style={{ fontSize: 52, color: '#D1D5DB' }} />}
-            description={<span style={{ color: '#9CA3AF' }}>Chưa có thông báo nào</span>}
+            image={<BellOutlined style={{ fontSize: 52, color: 'var(--border)' }} />}
+            description={<span style={{ color: 'var(--text-muted)' }}>Chưa có thông báo nào</span>}
           />
         </div>
       ) : (
@@ -60,35 +60,35 @@ export default function NotificationsPage() {
               key={item.id}
               onClick={() => !item.is_read && markRead.mutate(item.notification_id)}
               style={{
-                background: !item.is_read ? '#EEF2FF' : '#fff',
-                border: `1px solid ${!item.is_read ? '#C7D2FE' : '#E5E7EB'}`,
+                background: !item.is_read ? 'var(--primary-soft)' : 'var(--bg-card)',
+                border: `1px solid ${!item.is_read ? 'var(--primary-border)' : 'var(--border)'}`,
                 borderRadius: 14, padding: '16px 20px',
                 cursor: !item.is_read ? 'pointer' : 'default',
                 transition: 'all 0.2s',
                 position: 'relative',
                 boxShadow: !item.is_read ? '0 2px 8px rgba(79,70,229,0.08)' : '0 1px 3px rgba(0,0,0,0.04)',
               }}
-              onMouseEnter={e => { if (!item.is_read) e.currentTarget.style.background = '#E0E7FF'; }}
-              onMouseLeave={e => { if (!item.is_read) e.currentTarget.style.background = '#EEF2FF'; }}
+              onMouseEnter={e => { if (!item.is_read) e.currentTarget.style.background = 'var(--primary-soft)'; }}
+              onMouseLeave={e => { if (!item.is_read) e.currentTarget.style.background = 'var(--primary-soft)'; }}
             >
               {!item.is_read && (
                 <div style={{
                   position: 'absolute', top: 16, right: 16,
                   width: 8, height: 8, borderRadius: '50%',
-                  background: '#4F46E5', boxShadow: '0 0 0 3px rgba(79,70,229,0.15)',
+                  background: 'var(--primary)', boxShadow: '0 0 0 3px rgba(79,70,229,0.15)',
                 }} />
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <Text strong style={{ color: '#111827', fontSize: 15 }}>{item.notification?.title}</Text>
-                <Text style={{ color: '#9CA3AF', fontSize: 12 }}>
+                <Text strong style={{ color: 'var(--text-primary)', fontSize: 15 }}>{item.notification?.title}</Text>
+                <Text style={{ color: 'var(--text-muted)', fontSize: 12 }}>
                   {dayjs(item.notification?.created_at).format('DD/MM/YYYY HH:mm')}
                 </Text>
               </div>
-              <Paragraph style={{ color: '#4B5563', margin: '0 0 8px', lineHeight: 1.6 }}>
+              <Paragraph style={{ color: 'var(--text-secondary)', margin: '0 0 8px', lineHeight: 1.6 }}>
                 {item.notification?.content}
               </Paragraph>
-              <Text style={{ color: '#9CA3AF', fontSize: 12 }}>
-                📨 Từ: {item.notification?.creator?.full_name}
+              <Text style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                 Từ: {item.notification?.creator?.full_name}
               </Text>
             </div>
           ))}

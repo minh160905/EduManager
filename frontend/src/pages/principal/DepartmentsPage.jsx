@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, Table, Button, Select, Space, Typography, Tag, Drawer, Avatar, Empty, Spin } from 'antd';
-import { SolutionOutlined, TeamOutlined, UserOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SolutionOutlined, TeamOutlined, PlusOutlined } from '@ant-design/icons';
 import { departmentsApi, usersApi } from '../../api';
 import { App } from 'antd';
 
@@ -117,7 +117,7 @@ export default function DepartmentsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>💼 Quản lý Tổ chuyên môn</h1>
+        <h1>Quản lý Tổ chuyên môn</h1>
         <p>Phân công tổ trưởng và quản lý danh sách thành viên các tổ bộ môn</p>
       </div>
 
@@ -128,21 +128,21 @@ export default function DepartmentsPage() {
             <Card
               key={dept.department_id}
               hoverable
-              title={<span style={{ color: '#0F766E', fontWeight: 800, fontSize: 16 }}>{dept.department_name}</span>}
+              title={<span style={{ color: 'var(--success)', fontWeight: 800, fontSize: 16 }}>{dept.department_name}</span>}
               extra={<Tag color="cyan">{dept.subject?.subject_name}</Tag>}
-              style={{ borderRadius: 12, border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}
+              style={{ borderRadius: 12, border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}
               bodyStyle={{ padding: 20 }}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <Text style={{ color: '#94A3B8', fontSize: 12, display: 'block', marginBottom: 4 }}>Tổ trưởng chuyên môn</Text>
+                  <Text style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 4 }}>Tổ trưởng chuyên môn</Text>
                   {dept.head_teacher ? (
                     <Space>
-                      <Avatar style={{ background: '#0F766E' }} size="small" icon={<UserOutlined />} />
-                      <Text strong style={{ color: '#1E293B' }}>{dept.head_teacher.full_name}</Text>
+                      <Avatar style={{ background: 'var(--success)', color: '#fff' }} size="small">{dept.head_teacher.full_name?.[0]}</Avatar>
+                      <Text strong style={{ color: 'var(--text-primary)' }}>{dept.head_teacher.full_name}</Text>
                     </Space>
                   ) : (
-                    <Text italic style={{ color: '#94A3B8' }}>Chưa bổ nhiệm</Text>
+                    <Text italic style={{ color: 'var(--text-muted)' }}>Chưa bổ nhiệm</Text>
                   )}
                 </div>
 
@@ -175,31 +175,25 @@ export default function DepartmentsPage() {
         width={580}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 10,
-              background: 'linear-gradient(135deg, #0F766E, #14B8A6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 18,
-            }}>💼</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 16, color: '#1E293B' }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text-primary)' }}>
                 {selectedDept?.department_name}
               </div>
-              <div style={{ fontSize: 12, color: '#0F766E', fontWeight: 600 }}>
+              <div style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>
                 Môn học: {selectedDept?.subject?.subject_name}
               </div>
             </div>
           </div>
         }
         styles={{
-          header: { borderBottom: '1px solid #E2E8F0' },
-          body: { background: '#F8FAFF', padding: 24 },
+          header: { borderBottom: '1px solid var(--border)' },
+          body: { background: 'var(--bg-page)', padding: 24 },
         }}
       >
         {selectedDept && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* 1. Bổ nhiệm Tổ trưởng */}
-            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}>👑 Bổ nhiệm Tổ trưởng</span>} size="small" style={{ borderRadius: 10 }}>
+            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}> Bổ nhiệm Tổ trưởng</span>} size="small" style={{ borderRadius: 10 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Text style={{ color: '#64748B', fontSize: 12 }}>
                   Chọn giáo viên trong tổ bộ môn làm Tổ trưởng chuyên môn
@@ -220,7 +214,7 @@ export default function DepartmentsPage() {
             </Card>
 
             {/* 2. Thêm giáo viên vào tổ */}
-            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}>➕ Thêm giáo viên vào tổ</span>} size="small" style={{ borderRadius: 10 }}>
+            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}> Thêm giáo viên vào tổ</span>} size="small" style={{ borderRadius: 10 }}>
               <Space style={{ width: '100%' }}>
                 <Select
                   placeholder="Chọn giáo viên tự do..."
@@ -248,7 +242,7 @@ export default function DepartmentsPage() {
             </Card>
 
             {/* 3. Danh sách thành viên */}
-            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}>👥 Danh sách thành viên ({selectedDept.members?.length || 0})</span>} size="small" style={{ borderRadius: 10 }}>
+            <Card title={<span style={{ fontSize: 14, fontWeight: 700 }}> Danh sách thành viên ({selectedDept.members?.length || 0})</span>} size="small" style={{ borderRadius: 10 }}>
               <Table
                 dataSource={selectedDept.members}
                 rowKey="teacher_id"
@@ -259,7 +253,7 @@ export default function DepartmentsPage() {
                     title: 'Họ tên',
                     render: (_, r) => (
                       <Space>
-                        <Avatar size="small" style={{ background: '#E2E8F0', color: '#475569' }}>
+                        <Avatar size="small" style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}>
                           {r.teacher?.full_name?.[0]?.toUpperCase()}
                         </Avatar>
                         <div>
@@ -284,10 +278,9 @@ export default function DepartmentsPage() {
                         size="small"
                         danger
                         type="text"
-                        icon={<DeleteOutlined />}
                         loading={removeMemberMut.isPending}
                         onClick={() => handleRemoveMember(r.teacher_id)}
-                      />
+                      >Xóa</Button>
                     ),
                   },
                 ]}

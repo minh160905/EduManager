@@ -18,6 +18,8 @@ const commentsRouter = require('./modules/comments/comments.router');
 const conductRouter = require('./modules/comments/conduct.router');
 const schedulesRouter = require('./modules/schedules/schedules.router');
 const departmentsRouter = require('./modules/departments/departments.router');
+const examsRouter = require('./modules/exams/exams.router');
+const chatbotRouter = require('./modules/chatbot/chatbot.router');
 const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -49,6 +51,8 @@ app.use('/api/comments', commentsRouter);
 app.use('/api/conducts', conductRouter);
 app.use('/api/schedules', schedulesRouter);
 app.use('/api/departments', departmentsRouter);
+app.use('/api/exams', examsRouter);
+app.use('/api/chatbot', chatbotRouter);
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));

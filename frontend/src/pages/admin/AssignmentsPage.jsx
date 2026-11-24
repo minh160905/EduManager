@@ -131,13 +131,13 @@ export default function AssignmentsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-            background: 'linear-gradient(135deg, #EEF2FF, #E0E7FF)',
+            background: 'linear-gradient(135deg, var(--primary-soft), var(--primary-soft))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#4F46E5', fontWeight: 700,
+            color: 'var(--primary)', fontWeight: 700,
           }}>{r.teacher?.full_name?.[0]}</div>
           <div>
-            <div style={{ color: '#111827', fontWeight: 600 }}>{r.teacher?.full_name}</div>
-            <div style={{ color: '#6B7280', fontSize: 12 }}>@{r.teacher?.username}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{r.teacher?.full_name}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{r.teacher?.username}</div>
           </div>
         </div>
       ),
@@ -149,7 +149,7 @@ export default function AssignmentsPage() {
         </Tag>
       ),
     },
-    { title: 'Năm học', render: (_, r) => <Text style={{ color: '#6B7280' }}>{r.class_instance?.year?.name}</Text> },
+    { title: 'Năm học', render: (_, r) => <Text style={{ color: 'var(--text-secondary)' }}>{r.class_instance?.year?.name}</Text> },
     {
       title: 'Môn học', render: (_, r) => (
         <Tag color={subjectColor(r.subject?.subject_name || '')} style={{ borderRadius: 8 }}>
@@ -194,18 +194,18 @@ export default function AssignmentsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>📋 Phân công giáo viên</h1>
-        <p>Gán giáo viên dạy môn học cho từng lớp · Xem ma trận phân công · Theo dõi tải giáo viên</p>
+        <h1>Phân công giáo viên</h1>
+        <p>Phân công giáo viên theo lớp và môn học.</p>
       </div>
 
       {/* ── Form phân công nhanh ─────────────────────────────────────────── */}
       {!isPrincipal && (
         <div style={{
-          background: '#fff', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
           borderRadius: 14, padding: '18px 20px', marginBottom: 20,
         }}>
-          <Text strong style={{ color: '#4F46E5', marginBottom: 12, display: 'block', fontSize: 14 }}>
-            ➕ Phân công nhanh
+          <Text strong style={{ color: 'var(--primary)', marginBottom: 12, display: 'block', fontSize: 14 }}>
+             Phân công nhanh
           </Text>
           <Space wrap>
             <Select
@@ -242,9 +242,9 @@ export default function AssignmentsPage() {
       {/* ── Stats bar ────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Tổng phân công', value: assignments.length, color: '#4F46E5', bg: 'rgba(79,70,229,0.15)', border: 'rgba(79,70,229,0.3)' },
-          { label: 'Giáo viên', value: new Set(assignments.map(a => a.teacher_id)).size, color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
-          { label: 'Lớp học', value: new Set(assignments.map(a => a.class_instance_id)).size, color: '#10B981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)' },
+          { label: 'Tổng phân công', value: assignments.length, color: 'var(--primary)', bg: 'rgba(79,70,229,0.15)', border: 'rgba(79,70,229,0.3)' },
+          { label: 'Giáo viên', value: new Set(assignments.map(a => a.teacher_id)).size, color: 'var(--warning)', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
+          { label: 'Lớp học', value: new Set(assignments.map(a => a.class_instance_id)).size, color: 'var(--success)', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)' },
           { label: 'Môn học', value: new Set(assignments.map(a => a.subject_id)).size, color: '#60A5FA', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.3)' },
         ].map((s, i) => (
           <div key={i} style={{
@@ -252,7 +252,7 @@ export default function AssignmentsPage() {
             padding: '14px 18px', textAlign: 'center',
           }}>
             <div style={{ color: s.color, fontSize: 28, fontWeight: 800 }}>{s.value}</div>
-            <div style={{ color: '#94A3B8', fontSize: 12 }}>{s.label}</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -260,7 +260,7 @@ export default function AssignmentsPage() {
       {/* ── Tabs ─────────────────────────────────────────────────────────── */}
       <Tabs
         defaultActiveKey="list"
-        style={{ background: '#fff', padding: 20, borderRadius: 14, border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+        style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 14, border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
         items={[
 
           // ── Tab 1: Danh sách ──────────────────────────────────────────
@@ -329,15 +329,15 @@ export default function AssignmentsPage() {
                 </div>
 
                 {matrixLoading ? <div style={{ textAlign: 'center', padding: 60 }}><Spin size="large" /></div>
-                  : !matrix ? <div style={{ color: '#6B7280', textAlign: 'center', padding: 40 }}>Chọn năm học để xem ma trận</div>
+                  : !matrix ? <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 40 }}>Chọn năm học để xem ma trận</div>
                   : (
                     <div style={{ overflowX: 'auto' }}>
                       <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
                         <thead>
                           <tr>
-                            <th style={{ ...thStyle, background: '#F8FAFF', minWidth: 90 }}>Lớp \ Môn</th>
+                            <th style={{ ...thStyle, background: 'var(--bg-page)', minWidth: 90 }}>Lớp \ Môn</th>
                             {matrix.subjects.map(s => (
-                              <th key={s.subject_id} style={{ ...thStyle, background: '#F8FAFF' }}>
+                              <th key={s.subject_id} style={{ ...thStyle, background: 'var(--bg-page)' }}>
                                 <Tag color={subjectColor(s.subject_name)} style={{ margin: 0, borderRadius: 6 }}>
                                   {s.subject_name}
                                 </Tag>
@@ -347,10 +347,10 @@ export default function AssignmentsPage() {
                         </thead>
                         <tbody>
                           {matrix.classes.map((cls, ri) => (
-                            <tr key={cls.class_instance_id} style={{ background: ri % 2 === 0 ? '#fff' : '#F8FAFF' }}>
-                              <td style={{ ...tdStyle, fontWeight: 700, color: '#4F46E5', fontSize: 14 }}>
+                            <tr key={cls.class_instance_id} style={{ background: ri % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-card-hover)' }}>
+                              <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--primary)', fontSize: 14 }}>
                                 {cls.label}
-                                <div style={{ color: '#6B7280', fontSize: 10, fontWeight: 400 }}>{cls.year}</div>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: 10, fontWeight: 400 }}>{cls.year}</div>
                               </td>
                               {matrix.subjects.map(sub => {
                                 const key = `${cls.class_instance_id}-${sub.subject_id}`;
@@ -362,17 +362,17 @@ export default function AssignmentsPage() {
                                   }}>
                                     {cell ? (
                                       <div style={{ textAlign: 'center' }}>
-                                        <div style={{ color: '#10B981', fontWeight: 600, fontSize: 12 }}>{cell.teacher_name}</div>
+                                        <div style={{ color: 'var(--success)', fontWeight: 600, fontSize: 12 }}>{cell.teacher_name}</div>
                                         {!isPrincipal && (
                                           <Popconfirm title="Xóa phân công này?" okText="Xóa" cancelText="Hủy"
                                             onConfirm={() => deleteMut.mutate(cell.assignment_id)}>
-                                            <Button type="text" size="small" danger style={{ fontSize: 10, padding: '0 4px', height: 18 }}>✕</Button>
+                                            <Button type="text" size="small" danger style={{ fontSize: 10, padding: '0 4px', height: 18 }}>Xóa</Button>
                                           </Popconfirm>
                                         )}
                                       </div>
                                     ) : (
                                       <Tooltip title={`Chưa phân công ${sub.subject_name} cho lớp ${cls.label}`}>
-                                        <div style={{ textAlign: 'center', color: '#475569', fontSize: 18 }}>—</div>
+                                        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 18 }}>—</div>
                                       </Tooltip>
                                     )}
                                   </td>
@@ -388,12 +388,12 @@ export default function AssignmentsPage() {
                 {/* Legend */}
                 <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 14, height: 14, borderRadius: 3, background: 'rgba(16,185,129,0.2)', border: '1px solid #10B98150' }} />
-                    <Text style={{ color: '#94A3B8', fontSize: 12 }}>Đã phân công</Text>
+                    <div style={{ width: 14, height: 14, borderRadius: 3, background: 'var(--success-soft)', border: '1px solid var(--success)' }} />
+                    <Text style={{ color: 'var(--text-muted)', fontSize: 12 }}>Đã phân công</Text>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 14, height: 14, borderRadius: 3, background: 'rgba(239,68,68,0.15)', border: '1px solid #EF444450' }} />
-                    <Text style={{ color: '#94A3B8', fontSize: 12 }}>Chưa phân công</Text>
+                    <div style={{ width: 14, height: 14, borderRadius: 3, background: 'var(--danger-soft)', border: '1px solid var(--danger)' }} />
+                    <Text style={{ color: 'var(--text-muted)', fontSize: 12 }}>Chưa phân công</Text>
                   </div>
                 </div>
               </div>
@@ -406,19 +406,19 @@ export default function AssignmentsPage() {
             children: (
               <div>
                 {workload.length === 0
-                  ? <div style={{ color: '#6B7280', textAlign: 'center', padding: 40 }}>Chưa có phân công nào</div>
+                  ? <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: 40 }}>Chưa có phân công nào</div>
                   : (
                     <div>
                       {/* Summary bar */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
                         {[
-                          { label: 'Tổng GV', value: workload.length, color: '#4F46E5', bg: 'rgba(79,70,229,0.12)' },
-                          { label: 'Tổng tiết/tuần (toàn trường)', value: workload.reduce((s, w) => s + (w.weekly_periods || 0), 0), color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-                          { label: 'TB tiết/GV/tuần', value: workload.length ? Math.round(workload.reduce((s, w) => s + (w.weekly_periods || 0), 0) / workload.length) : 0, color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
+                          { label: 'Tổng GV', value: workload.length, color: 'var(--primary)', bg: 'rgba(79,70,229,0.12)' },
+                          { label: 'Tổng tiết/tuần (toàn trường)', value: workload.reduce((s, w) => s + (w.weekly_periods || 0), 0), color: 'var(--success)', bg: 'rgba(16,185,129,0.1)' },
+                          { label: 'TB tiết/GV/tuần', value: workload.length ? Math.round(workload.reduce((s, w) => s + (w.weekly_periods || 0), 0) / workload.length) : 0, color: 'var(--warning)', bg: 'rgba(245,158,11,0.1)' },
                         ].map((s, i) => (
-                          <div key={i} style={{ background: s.bg, border: `1px solid ${s.color}30`, borderRadius: 10, padding: '10px 14px', textAlign: 'center' }}>
+                          <div key={i} style={{ background: s.bg, border: `1px solid color-mix(in srgb, ${s.color} 19%, transparent)`, borderRadius: 10, padding: '10px 14px', textAlign: 'center' }}>
                             <div style={{ color: s.color, fontSize: 22, fontWeight: 800 }}>{s.value}</div>
-                            <div style={{ color: '#94A3B8', fontSize: 11 }}>{s.label}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{s.label}</div>
                           </div>
                         ))}
                       </div>
@@ -433,15 +433,15 @@ export default function AssignmentsPage() {
                           // Cảnh báo nếu tiết/tuần > 25 (tiêu chuẩn thông thường)
                           const WARN_THRESHOLD = 25;
                           const isHeavy = (w.weekly_periods || 0) >= WARN_THRESHOLD;
-                          const periodColor = isHeavy ? '#EF4444' : (w.weekly_periods || 0) >= 18 ? '#F59E0B' : '#10B981';
-                          const assignColor = assignPct >= 80 ? '#EF4444' : assignPct >= 50 ? '#F59E0B' : '#4F46E5';
+                          const periodColor = isHeavy ? 'var(--danger)' : (w.weekly_periods || 0) >= 18 ? 'var(--warning)' : 'var(--success)';
+                          const assignColor = assignPct >= 80 ? 'var(--danger)' : assignPct >= 50 ? 'var(--warning)' : 'var(--primary)';
 
                           const periodByClass = w.periods_by_class || {};
                           const periodByClassEntries = Object.entries(periodByClass).sort((a, b) => b[1] - a[1]);
 
                           return (
                             <div key={w.teacher_id} style={{
-                              background: '#fff', border: `1px solid ${isHeavy ? 'rgba(239,68,68,0.3)' : '#E5E7EB'}`,
+                              background: 'var(--bg-card)', border: `1px solid ${isHeavy ? 'rgba(239,68,68,0.3)' : 'var(--border)'}`,
                               borderRadius: 12, padding: '16px 18px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
                             }}>
                               {/* Header: rank + name + two key numbers */}
@@ -449,26 +449,26 @@ export default function AssignmentsPage() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                   <div style={{
                                     width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                    background: 'linear-gradient(135deg, #EEF2FF, #E0E7FF)',
+                                    background: 'linear-gradient(135deg, var(--primary-soft), var(--primary-soft))',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#4F46E5', fontWeight: 700, fontSize: 16,
+                                    color: 'var(--primary)', fontWeight: 700, fontSize: 16,
                                   }}>
                                     {i + 1}
                                   </div>
                                   <div>
-                                    <div style={{ color: '#111827', fontWeight: 700, fontSize: 15 }}>{w.full_name}</div>
-                                    <div style={{ color: '#6B7280', fontSize: 12 }}>@{w.username}</div>
+                                    <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 15 }}>{w.full_name}</div>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{w.username}</div>
                                   </div>
                                 </div>
                                 {/* Two stat badges */}
                                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                                  <div style={{ textAlign: 'center', background: `${periodColor}15`, border: `1px solid ${periodColor}40`, borderRadius: 10, padding: '6px 14px' }}>
+                                  <div style={{ textAlign: 'center', background: `color-mix(in srgb, ${periodColor} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${periodColor} 25%, transparent)`, borderRadius: 10, padding: '6px 14px' }}>
                                     <div style={{ color: periodColor, fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{w.weekly_periods || 0}</div>
-                                    <div style={{ color: '#94A3B8', fontSize: 10, marginTop: 2 }}>tiết/tuần</div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>tiết/tuần</div>
                                   </div>
                                   <div style={{ textAlign: 'center', background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.3)', borderRadius: 10, padding: '6px 14px' }}>
-                                    <div style={{ color: '#4F46E5', fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{w.total_assignments}</div>
-                                    <div style={{ color: '#94A3B8', fontSize: 10, marginTop: 2 }}>phân công</div>
+                                    <div style={{ color: 'var(--primary)', fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{w.total_assignments}</div>
+                                    <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>phân công</div>
                                   </div>
                                 </div>
                               </div>
@@ -476,19 +476,19 @@ export default function AssignmentsPage() {
                               {/* Progress bars */}
                               <div style={{ marginBottom: 10 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                  <span style={{ color: '#94A3B8', fontSize: 11 }}>📅 Khối lượng tiết/tuần ({w.weekly_periods || 0} tiết)</span>
-                                  {isHeavy && <span style={{ color: '#EF4444', fontSize: 11, fontWeight: 600 }}>⚠️ Vượt chuẩn ({WARN_THRESHOLD} tiết)</span>}
+                                  <span style={{ color: 'var(--text-muted)', fontSize: 11 }}> Khối lượng tiết/tuần ({w.weekly_periods || 0} tiết)</span>
+                                  {isHeavy && <span style={{ color: 'var(--danger)', fontSize: 11, fontWeight: 600 }}> Vượt chuẩn ({WARN_THRESHOLD} tiết)</span>}
                                 </div>
                                 <Progress percent={periodPct} showInfo={false} strokeColor={periodColor} trailColor="rgba(99,102,241,0.12)" strokeWidth={10} style={{ marginBottom: 6 }} />
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                  <span style={{ color: '#94A3B8', fontSize: 11 }}>📋 Số lớp phân công ({w.total_assignments} phân công)</span>
+                                  <span style={{ color: 'var(--text-muted)', fontSize: 11 }}> Số lớp phân công ({w.total_assignments} phân công)</span>
                                 </div>
                                 <Progress percent={assignPct} showInfo={false} strokeColor={assignColor} trailColor="rgba(99,102,241,0.12)" strokeWidth={6} />
                               </div>
 
                               {/* Tags: subjects */}
                               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                                <span style={{ color: '#6B7280', fontSize: 12 }}>Môn dạy:</span>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Môn dạy:</span>
                                 {w.subjects.map((s, j) => (
                                   <Tag key={j} color={subjectColor(s)} style={{ borderRadius: 6, fontSize: 11 }}>{s}</Tag>
                                 ))}
@@ -496,20 +496,20 @@ export default function AssignmentsPage() {
 
                               {/* Per-class period breakdown */}
                               {periodByClassEntries.length > 0 && (
-                                <div style={{ background: '#F8FAFF', border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 12px' }}>
-                                  <div style={{ color: '#4B5563', fontSize: 11, marginBottom: 6, fontWeight: 600 }}>
-                                    📊 Phân rã tiết theo lớp:
+                                <div style={{ background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px' }}>
+                                  <div style={{ color: 'var(--text-secondary)', fontSize: 11, marginBottom: 6, fontWeight: 600 }}>
+                                     Phân rã tiết theo lớp:
                                   </div>
                                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                     {periodByClassEntries.map(([cls, count]) => (
                                       <div key={cls} style={{
                                         display: 'flex', alignItems: 'center', gap: 5,
-                                        background: '#EEF2FF', border: '1px solid #C7D2FE',
+                                        background: 'var(--primary-soft)', border: '1px solid var(--primary-border)',
                                         borderRadius: 8, padding: '3px 10px',
                                       }}>
-                                        <span style={{ color: '#4F46E5', fontWeight: 700, fontSize: 12 }}>{cls}</span>
-                                        <span style={{ color: '#9CA3AF', fontSize: 11 }}>·</span>
-                                        <span style={{ color: '#D97706', fontWeight: 600, fontSize: 12 }}>{count} tiết</span>
+                                        <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 12 }}>{cls}</span>
+                                        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>·</span>
+                                        <span style={{ color: 'var(--warning)', fontWeight: 600, fontSize: 12 }}>{count} tiết</span>
                                       </div>
                                     ))}
                                   </div>
@@ -520,9 +520,9 @@ export default function AssignmentsPage() {
                                 <div style={{
                                   marginTop: 8, background: 'rgba(239,68,68,0.08)',
                                   border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '6px 12px',
-                                  color: '#EF4444', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
+                                  color: 'var(--danger)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
                                 }}>
-                                  ⚠️ Giáo viên đang dạy <strong>{w.weekly_periods}</strong> tiết/tuần — vượt ngưỡng khuyến nghị {WARN_THRESHOLD} tiết/tuần. Cân nhắc điều chỉnh TKB.
+                                   Giáo viên đang dạy <strong>{w.weekly_periods}</strong> tiết/tuần — vượt ngưỡng khuyến nghị {WARN_THRESHOLD} tiết/tuần. Cân nhắc điều chỉnh TKB.
                                 </div>
                               )}
                             </div>
@@ -543,12 +543,12 @@ export default function AssignmentsPage() {
 
 const thStyle = {
   padding: '10px 12px', textAlign: 'center',
-  border: '1px solid #E5E7EB',
-  color: '#374151', fontWeight: 600, whiteSpace: 'nowrap',
+  border: '1px solid var(--border)',
+  color: 'var(--text-secondary)', fontWeight: 600, whiteSpace: 'nowrap',
 };
 
 const tdStyle = {
   padding: '8px 10px', textAlign: 'center',
-  border: '1px solid #F3F4F6',
+  border: '1px solid var(--border-soft)',
   minWidth: 100,
 };

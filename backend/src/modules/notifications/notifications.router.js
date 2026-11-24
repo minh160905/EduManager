@@ -19,11 +19,11 @@ router.get('/sent', authorize('TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'), asy
 });
 
 router.get('/recipients', authorize('TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'), async (req, res, next) => {
-  try { success(res, await svc.getRecipients(req.user.userId)); } catch (e) { next(e); }
+  try { success(res, await svc.getRecipients(req.user)); } catch (e) { next(e); }
 });
 
 router.post('/', authorize('TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'), async (req, res, next) => {
-  try { created(res, await svc.create(req.body, req.user.userId)); } catch (e) { next(e); }
+  try { created(res, await svc.create(req.body, req.user)); } catch (e) { next(e); }
 });
 
 router.patch('/:id/read', async (req, res, next) => {

@@ -4,7 +4,7 @@ import {
   Avatar, Spin, Empty, Tabs,
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, UserOutlined, MailOutlined,
+  PlusOutlined, UserOutlined, MailOutlined,
   PhoneOutlined, TeamOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,12 +15,12 @@ const { Text } = Typography;
 
 // Màu gradient cho từng card theo index
 const CARD_GRADIENTS = [
-  ['#4F46E5', '#7C3AED'],
-  ['#0EA5E9', '#6366F1'],
-  ['#10B981', '#059669'],
-  ['#F59E0B', '#D97706'],
-  ['#EF4444', '#DC2626'],
-  ['#8B5CF6', '#7C3AED'],
+  ['var(--primary)', 'var(--accent)'],
+  ['#0EA5E9', 'var(--primary-light)'],
+  ['var(--success)', 'var(--success)'],
+  ['var(--warning)', 'var(--warning)'],
+  ['var(--danger)', 'var(--danger)'],
+  ['#8B5CF6', 'var(--accent)'],
   ['#14B8A6', '#0D9488'],
   ['#F97316', '#EA580C'],
 ];
@@ -81,13 +81,13 @@ export default function SubjectsPage() {
       title: 'Giáo viên', render: (_, r) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Avatar
-            style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', fontWeight: 700, flexShrink: 0 }}
+            style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', fontWeight: 700, flexShrink: 0 }}
             icon={<UserOutlined />}
           />
           <div>
-            <div style={{ color: '#111827', fontWeight: 600 }}>{r.full_name}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{r.full_name}</div>
             {r.email && (
-              <div style={{ color: '#6B7280', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
                 <MailOutlined style={{ fontSize: 10 }} />{r.email}
               </div>
             )}
@@ -98,10 +98,10 @@ export default function SubjectsPage() {
     {
       title: 'SĐT', dataIndex: 'phone',
       render: v => v
-        ? <span style={{ color: '#94A3B8', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
+        ? <span style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
           <PhoneOutlined style={{ fontSize: 10 }} />{v}
         </span>
-        : <Text style={{ color: '#475569' }}>—</Text>,
+        : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
     {
       title: 'Lớp phụ trách', dataIndex: 'classes',
@@ -119,13 +119,13 @@ export default function SubjectsPage() {
 
   const [c1Active] = activeSubject
     ? CARD_GRADIENTS[subjects.findIndex(s => s.subject_id === activeSubject.subject_id) % CARD_GRADIENTS.length]
-    : ['#4F46E5', '#7C3AED'];
+    : ['var(--primary)', 'var(--accent)'];
 
   return (
     <div>
       <div className="page-header">
-        <h1>📖 Quản lý môn học</h1>
-        <p>Thêm, sửa các môn học · Nhấn vào card để xem giáo viên và phân công</p>
+        <h1>Quản lý môn học</h1>
+        <p>Quản lý môn học và giáo viên phụ trách.</p>
       </div>
 
       <div style={{ marginBottom: 16 }}>
@@ -144,8 +144,8 @@ export default function SubjectsPage() {
               key={s.subject_id}
               onClick={() => openDrawer(s)}
               style={{
-                background: `linear-gradient(135deg, ${c1}22, ${c2}15)`,
-                border: `1px solid ${c1}40`,
+                background: `linear-gradient(135deg, color-mix(in srgb, ${c1} 13%, transparent), color-mix(in srgb, ${c2} 8%, transparent))`,
+                border: `1px solid color-mix(in srgb, ${c1} 25%, transparent)`,
                 borderRadius: 14,
                 padding: '18px 20px',
                 display: 'flex',
@@ -158,13 +158,13 @@ export default function SubjectsPage() {
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = `0 10px 30px ${c1}30`;
-                e.currentTarget.style.borderColor = `${c1}80`;
+                e.currentTarget.style.boxShadow = `0 10px 30px color-mix(in srgb, ${c1} 19%, transparent)`;
+                e.currentTarget.style.borderColor = `color-mix(in srgb, ${c1} 50%, transparent)`;
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = `${c1}40`;
+                e.currentTarget.style.borderColor = `color-mix(in srgb, ${c1} 25%, transparent)`;
               }}
             >
               {/* Glow orb */}
@@ -176,7 +176,7 @@ export default function SubjectsPage() {
               }} />
 
               <div>
-                <div style={{ color: '#111827', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: 18, marginBottom: 4 }}>
                   {s.subject_name}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: c1, fontSize: 12, fontWeight: 500 }}>
@@ -187,14 +187,13 @@ export default function SubjectsPage() {
 
               <Button
                 size="small"
-                icon={<EditOutlined />}
                 onClick={(e) => { e.stopPropagation(); openModal(s); }}
                 style={{
-                  borderRadius: 8, background: `${c1}20`,
-                  border: `1px solid ${c1}40`, color: c1,
+                  borderRadius: 8, background: `color-mix(in srgb, ${c1} 13%, transparent)`,
+                  border: `1px solid color-mix(in srgb, ${c1} 25%, transparent)`, color: c1,
                   flexShrink: 0,
                 }}
-              />
+              >Sửa</Button>
             </div>
           );
         })}
@@ -206,7 +205,7 @@ export default function SubjectsPage() {
             background: 'rgba(79,70,229,0.05)',
             border: '2px dashed rgba(79,70,229,0.3)',
             borderRadius: 14, padding: '18px 20px',
-            cursor: 'pointer', color: '#4F46E5', fontSize: 28,
+            cursor: 'pointer', color: 'var(--primary)', fontSize: 28,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.2s', minHeight: 80,
           }}
@@ -224,27 +223,19 @@ export default function SubjectsPage() {
         width={700}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16,
-            }}>
-              📚
-            </div>
             <div>
-              <div style={{ color: '#111827', fontWeight: 700, fontSize: 16 }}>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 16 }}>
                 {activeSubject?.subject_name}
               </div>
-              <div style={{ color: '#4F46E5', fontSize: 12, fontWeight: 500 }}>
+              <div style={{ color: 'var(--primary)', fontSize: 12, fontWeight: 500 }}>
                 Giáo viên phụ trách môn học
               </div>
             </div>
           </div>
         }
         styles={{
-          header: { background: '#fff', borderBottom: '1px solid #E5E7EB' },
-          body: { background: '#F8FAFF', padding: 0 },
+          header: { background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' },
+          body: { background: 'var(--bg-page)', padding: 0 },
           mask: { backdropFilter: 'blur(4px)' },
         }}
       >
@@ -263,8 +254,8 @@ export default function SubjectsPage() {
                   ) : subjectTeachers.length === 0 ? (
                     <Empty
                       description={
-                        <span style={{ color: '#6B7280' }}>
-                          Chưa có giáo viên nào được phân công dạy môn <strong style={{ color: '#4F46E5' }}>{activeSubject?.subject_name}</strong>
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          Chưa có giáo viên nào được phân công dạy môn <strong style={{ color: 'var(--primary)' }}>{activeSubject?.subject_name}</strong>
                         </span>
                       }
                       style={{ padding: 40 }}
@@ -277,17 +268,17 @@ export default function SubjectsPage() {
                           background: 'rgba(79,70,229,0.15)', border: '1px solid rgba(79,70,229,0.3)',
                           borderRadius: 12, padding: '12px 20px', textAlign: 'center', flex: 1,
                         }}>
-                          <div style={{ color: '#4F46E5', fontSize: 28, fontWeight: 800 }}>{subjectTeachers.length}</div>
-                          <div style={{ color: '#94A3B8', fontSize: 12 }}>Giáo viên</div>
+                          <div style={{ color: 'var(--primary)', fontSize: 28, fontWeight: 800 }}>{subjectTeachers.length}</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Giáo viên</div>
                         </div>
                         <div style={{
                           background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)',
                           borderRadius: 12, padding: '12px 20px', textAlign: 'center', flex: 1,
                         }}>
-                          <div style={{ color: '#10B981', fontSize: 28, fontWeight: 800 }}>
+                          <div style={{ color: 'var(--success)', fontSize: 28, fontWeight: 800 }}>
                             {subjectTeachers.reduce((sum, t) => sum + (t.classes?.length || 0), 0)}
                           </div>
-                          <div style={{ color: '#94A3B8', fontSize: 12 }}>Lớp phụ trách</div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>Lớp phụ trách</div>
                         </div>
                       </div>
                       <Table
@@ -311,7 +302,7 @@ export default function SubjectsPage() {
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
-        title={<span style={{ color: '#111827' }}>{edit ? '✏️ Sửa môn học' : '➕ Thêm môn học'}</span>}
+        title={<span style={{ color: 'var(--text-primary)' }}>{edit ? ' Sửa môn học' : ' Thêm môn học'}</span>}
         footer={null} destroyOnClose
       >
         <Form

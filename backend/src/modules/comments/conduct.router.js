@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require('../../config/prisma');
 const { authenticate, authorize } = require('../../middleware/auth.middleware');
 const { success, created } = require('../../utils/response');
+const { assertClassAccess, assertStudentAccess, getAccessibleClassIds } = require('../../utils/access');
 
 router.use(authenticate);
 
@@ -44,10 +45,21 @@ router.get('/', async (req, res, next) => {
       } else {
         where.student_id = -1;
       }
+    } else if (['TEACHER', 'HEAD_OF_DEPARTMENT'].includes(req.user.role)) {
+      if (student_id) {
+        await assertStudentAccess(req.user, student_id, { yearId: year_id });
+        where.student_id = Number(student_id);
+      } else if (class_instance_id) {
+        await assertClassAccess(req.user, class_instance_id);
+        where.student = { enrollments: { some: { class_instance_id: Number(class_instance_id) } } };
+      } else {
+        const classIds = await getAccessibleClassIds(req.user);
+        where.student = { enrollments: { some: { class_instance_id: { in: classIds }, ...(year_id ? { year_id: Number(year_id) } : {}) } } };
+      }
     } else {
-      // TEACHER, ADMIN
+      // ADMIN, PRINCIPAL
       if (class_instance_id) {
-        where.student = { class_instance_id: Number(class_instance_id) };
+        where.student = { enrollments: { some: { class_instance_id: Number(class_instance_id) } } };
       }
       if (student_id) {
         where.student_id = Number(student_id);
@@ -72,14 +84,14 @@ router.put('/upsert', authorize('TEACHER', 'HEAD_OF_DEPARTMENT'), async (req, re
     const { student_id, semester, year_id, rating, note } = req.body;
 
     // Verify teacher is homeroom of student's class (only homeroom can rate conduct)
-    const student = await prisma.student.findUnique({
-      where: { student_id: Number(student_id) },
+    const enrollment = await prisma.studentEnrollment.findFirst({
+      where: { student_id: Number(student_id), year_id: Number(year_id) },
       include: { class_instance: true },
     });
-    if (!student?.class_instance) {
+    if (!enrollment) {
       return res.status(400).json({ success: false, message: 'Học sinh chưa có lớp' });
     }
-    if (student.class_instance.homeroom_teacher_id !== Number(req.user.userId)) {
+    if (enrollment.class_instance.homeroom_teacher_id !== Number(req.user.userId)) {
       return res.status(403).json({ success: false, message: 'Chỉ GVCN mới được đánh giá hạnh kiểm' });
     }
 

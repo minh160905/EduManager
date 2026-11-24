@@ -4,14 +4,22 @@ const prisma = require('../../config/prisma');
 const { authenticate, authorize } = require('../../middleware/auth.middleware');
 const { success, created } = require('../../utils/response');
 const notificationsService = require('../notifications/notifications.service');
+const { assertStudentAccess, getAccessibleClassIds } = require('../../utils/access');
 
 router.use(authenticate);
 
 router.post('/', authorize('TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'), async (req, res, next) => {
   try {
     const { student_id, semester, content } = req.body;
+    await assertStudentAccess(req.user, student_id);
+    if (![1, 2].includes(Number(semester))) {
+      return res.status(400).json({ success: false, message: 'Học kỳ không hợp lệ' });
+    }
+    if (!content || !String(content).trim()) {
+      return res.status(400).json({ success: false, message: 'Nội dung nhận xét không được để trống' });
+    }
     const comment = await prisma.comment.create({
-      data: { student_id: Number(student_id), teacher_id: req.user.userId, semester: Number(semester), content },
+      data: { student_id: Number(student_id), teacher_id: req.user.userId, semester: Number(semester), content: String(content).trim() },
       include: { teacher: { select: { full_name: true } } },
     });
 
@@ -40,7 +48,7 @@ router.post('/', authorize('TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'), async 
           title: 'Nhận xét mới từ giáo viên',
           content: `Giáo viên ${comment.teacher.full_name} đã gửi nhận xét mới trong Học kỳ ${semester}.`,
           receiver_ids: receiverIds
-        }, req.user.userId);
+        }, req.user);
       }
     }
 
@@ -84,9 +92,17 @@ router.get('/', async (req, res, next) => {
         where.student_id = -1;
       }
     } else {
-      if (student_id) where.student_id = Number(student_id);
-      if (['TEACHER', 'PRINCIPAL', 'HEAD_OF_DEPARTMENT'].includes(req.user.role) && all !== 'true') {
-        where.teacher_id = req.user.userId;
+      if (['TEACHER', 'HEAD_OF_DEPARTMENT'].includes(req.user.role)) {
+        if (student_id) {
+          await assertStudentAccess(req.user, student_id);
+          where.student_id = Number(student_id);
+        } else {
+          const classIds = await getAccessibleClassIds(req.user);
+          where.student = { class_instance_id: { in: classIds } };
+        }
+        if (all !== 'true') where.teacher_id = req.user.userId;
+      } else if (student_id) {
+        where.student_id = Number(student_id);
       }
     }
 

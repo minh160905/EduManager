@@ -19,15 +19,15 @@ const DAY_NAMES = { 2: 'Thứ 2', 3: 'Thứ 3', 4: 'Thứ 4', 5: 'Thứ 5', 6: '
 
 // ── Màu trạng thái tải GV ─────────────────────────────────────────────────────
 const getLoadColor = (periods) => {
-  if (periods >= 18) return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', label: 'Nặng' };
-  if (periods >= 12) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.09)', label: 'Vừa' };
-  if (periods >= 6)  return { color: '#10B981', bg: 'rgba(16,185,129,0.09)', label: 'Nhẹ' };
-  return { color: '#94A3B8', bg: 'rgba(148,163,184,0.09)', label: 'Rất ít' };
+  if (periods >= 18) return { color: 'var(--danger)', bg: 'rgba(239,68,68,0.1)', label: 'Nặng' };
+  if (periods >= 12) return { color: 'var(--warning)', bg: 'rgba(245,158,11,0.09)', label: 'Vừa' };
+  if (periods >= 6)  return { color: 'var(--success)', bg: 'rgba(16,185,129,0.09)', label: 'Nhẹ' };
+  return { color: 'var(--text-muted)', bg: 'rgba(148,163,184,0.09)', label: 'Rất ít' };
 };
 
 // Màu cho từng khối
 const GRADE_PALETTE = {
-  '10': { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.25)', label: 'Khối 10' },
+  '10': { color: 'var(--primary)', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.25)', label: 'Khối 10' },
   '11': { color: '#0EA5E9', bg: 'rgba(14,165,233,0.08)', border: 'rgba(14,165,233,0.25)', label: 'Khối 11' },
   '12': { color: '#8B5CF6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.25)', label: 'Khối 12' },
 };
@@ -40,23 +40,6 @@ function defaultPeriodsUI(subjectName = '') {
       n.includes('gdcd') || n.includes('tin') || n.includes('thể') ||
       n.includes('âm nhạc') || n.includes('nhạc')) return 2;
   return 1;
-}
-
-function getSubjectEmoji(name = '') {
-  const n = name.toLowerCase();
-  if (n.includes('toán')) return '📐';
-  if (n.includes('văn')) return '📝';
-  if (n.includes('anh')) return '🌍';
-  if (n.includes('lý')) return '⚛️';
-  if (n.includes('hóa')) return '🧪';
-  if (n.includes('sinh')) return '🌱';
-  if (n.includes('sử')) return '📜';
-  if (n.includes('địa')) return '🗺️';
-  if (n.includes('gdcd') || n.includes('công dân')) return '🏛️';
-  if (n.includes('tin')) return '💻';
-  if (n.includes('thể')) return '⚽';
-  if (n.includes('nhạc') || n.includes('âm')) return '🎵';
-  return '📚';
 }
 
 // ── Component chính ───────────────────────────────────────────────────────────
@@ -191,20 +174,20 @@ export default function AdminSchedulePage() {
     if (!generateResult?.scheduled?.length) return;
     const classCount = new Set(generateResult.scheduled.map(s => s.class_instance_id)).size;
     modal.confirm({
-      title: '⚠️ Xác nhận áp dụng thời khoá biểu',
+      title: ' Xác nhận áp dụng thời khoá biểu',
       content: (
         <div>
           <p style={{ marginBottom: 8 }}>
-            Thao tác này sẽ <strong style={{ color: '#EF4444' }}>XÓA TOÀN BỘ TKB hiện tại</strong>{' '}
+            Thao tác này sẽ <strong style={{ color: 'var(--danger)' }}>XÓA TOÀN BỘ TKB hiện tại</strong>{' '}
             của <strong>{classCount} lớp</strong> và thay bằng TKB mới vừa tạo.
           </p>
-          <p style={{ color: '#6B7280', fontSize: 13 }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
             Tổng <strong>{generateResult.scheduled.length} tiết</strong> sẽ được lưu. Không thể hoàn tác.
           </p>
         </div>
       ),
-      okText: '✅ Áp dụng ngay',
-      okButtonProps: { style: { background: '#4F46E5', borderColor: '#4F46E5' } },
+      okText: ' Áp dụng ngay',
+      okButtonProps: { style: { background: 'var(--primary)', borderColor: 'var(--primary)' } },
       cancelText: 'Hủy',
       onOk: async () => {
         setIsApplying(true);
@@ -245,8 +228,8 @@ export default function AdminSchedulePage() {
   return (
     <div>
       <div className="page-header">
-        <h1>📅 Thời khoá biểu</h1>
-        <p>Quản lý thủ công hoặc tự động sắp xếp toàn trường bằng AI</p>
+        <h1>Thời khóa biểu</h1>
+        <p>Xem và sắp xếp lịch học của các lớp.</p>
       </div>
 
       <Tabs
@@ -254,8 +237,8 @@ export default function AdminSchedulePage() {
         onChange={setActiveTab}
         size="large"
         style={{
-          background: '#fff', borderRadius: 14,
-          border: '1px solid #E5E7EB', padding: '0 20px',
+          background: 'var(--bg-card)', borderRadius: 14,
+          border: '1px solid var(--border)', padding: '0 20px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
         }}
         items={[
@@ -268,11 +251,11 @@ export default function AdminSchedulePage() {
             children: (
               <div style={{ paddingBottom: 20 }}>
                 <div style={{
-                  background: '#F8FAFF', border: '1px solid rgba(99,102,241,0.2)',
+                  background: 'var(--bg-page)', border: '1px solid rgba(99,102,241,0.2)',
                   borderRadius: 12, padding: '14px 18px', marginBottom: 16,
                   display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap',
                 }}>
-                  <Text style={{ color: '#94A3B8', flexShrink: 0, fontSize: 13 }}>Chọn lớp:</Text>
+                  <Text style={{ color: 'var(--text-muted)', flexShrink: 0, fontSize: 13 }}>Chọn lớp:</Text>
                   <Select
                     placeholder="Chọn lớp học..."
                     style={{ width: 280 }}
@@ -300,13 +283,12 @@ export default function AdminSchedulePage() {
                     </>
                   )}
                 </div>
-                <Text style={{ color: '#6B7280', fontSize: 12, display: 'block', marginBottom: 10 }}>
-                  💡 Click ô trống để thêm tiết · Click ô đã có để sửa hoặc xóa
+                <Text style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'block', marginBottom: 10 }}>
+                  Chọn ô trong bảng để thêm hoặc chỉnh sửa tiết học.
                 </Text>
-                <div style={{ background: 'rgba(30,27,75,0.4)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 12, padding: 14 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 14 }}>
                   {!selectedClass ? (
-                    <div style={{ textAlign: 'center', padding: 60, color: '#6B7280' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
+                    <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-secondary)' }}>
                       <div>Chọn một lớp để xem và chỉnh sửa thời khoá biểu</div>
                     </div>
                   ) : (
@@ -322,23 +304,22 @@ export default function AdminSchedulePage() {
           // ══════════════════════════════════════════════════════════════
           {
             key: 'auto',
-            label: <span style={{ padding: '0 4px' }}><RobotOutlined style={{ marginRight: 6 }} />🤖 Tự động sắp xếp</span>,
+            label: <span style={{ padding: '0 4px' }}><RobotOutlined style={{ marginRight: 6 }} /> Tự động sắp xếp</span>,
             children: (
               <div style={{ paddingBottom: 24 }}>
 
                 {/* Main grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: generateResult ? '1fr 1fr' : '1fr', gap: 20 }}>
+                <div className="schedule-settings-layout" style={{ display: 'grid', gridTemplateColumns: generateResult ? '1fr 1fr' : '1fr', gap: 20 }}>
 
                   {/* ── CONFIG PANEL ─────────────────────────────────── */}
-                  <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#4F46E5,#7C3AED)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>⚙️</div>
-                      <Text strong style={{ color: '#111827', fontSize: 15 }}>Cấu hình</Text>
+                      <Text strong style={{ color: 'var(--text-primary)', fontSize: 15 }}>Cấu hình</Text>
                     </div>
 
                     {/* Năm học */}
                     <div style={{ marginBottom: 14 }}>
-                      <Text style={{ color: '#6B7280', fontSize: 12, display: 'block', marginBottom: 5 }}>Lọc theo năm học (bỏ trống = tất cả)</Text>
+                      <Text style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'block', marginBottom: 5 }}>Năm học</Text>
                       <Select
                         placeholder="Tất cả năm học" allowClear style={{ width: '100%' }}
                         value={yearFilter} onChange={v => setYearFilter(v || null)}
@@ -350,16 +331,16 @@ export default function AdminSchedulePage() {
 
                     {/* Header cấu hình tiết */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                      <Text strong style={{ color: '#374151', fontSize: 13 }}>
+                      <Text strong style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
                         Số tiết / môn / tuần
-                        <span style={{ color: '#94A3B8', fontWeight: 400, fontSize: 11, marginLeft: 6 }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 11, marginLeft: 6 }}>
                           (theo từng khối)
                         </span>
                       </Text>
                       <Button
                         size="small" type="link"
                         onClick={resetPeriodsConfig}
-                        style={{ color: '#4F46E5', padding: 0, height: 'auto', fontSize: 11 }}
+                        style={{ color: 'var(--primary)', padding: 0, height: 'auto', fontSize: 11 }}
                       >
                         Đặt lại mặc định
                       </Button>
@@ -374,17 +355,17 @@ export default function AdminSchedulePage() {
                       style={{ marginBottom: 10 }}
                       tabBarStyle={{ marginBottom: 0 }}
                       items={grades.map(grade => {
-                        const gp = GRADE_PALETTE[grade] || { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.25)', label: `Khối ${grade}` };
+                        const gp = GRADE_PALETTE[grade] || { color: 'var(--primary)', bg: 'rgba(79,70,229,0.08)', border: 'rgba(79,70,229,0.25)', label: `Khối ${grade}` };
                         const gradeTotal = Object.values(periodsConfig[grade] || {}).reduce((a, b) => a + Number(b || 0), 0);
                         return {
                           key: grade,
                           label: (
-                            <span style={{ color: grade === gradeTab ? gp.color : '#6B7280', fontWeight: grade === gradeTab ? 700 : 500, fontSize: 13 }}>
+                            <span style={{ color: grade === gradeTab ? gp.color : 'var(--text-secondary)', fontWeight: grade === gradeTab ? 700 : 500, fontSize: 13 }}>
                               {gp.label}
                               <span style={{
                                 marginLeft: 5, fontSize: 10, fontWeight: 700,
-                                background: grade === gradeTab ? gp.color : '#E5E7EB',
-                                color: grade === gradeTab ? '#fff' : '#6B7280',
+                                background: grade === gradeTab ? gp.color : 'var(--border)',
+                                color: grade === gradeTab ? '#fff' : 'var(--text-secondary)',
                                 borderRadius: 8, padding: '1px 5px',
                               }}>{gradeTotal}</span>
                             </span>
@@ -394,17 +375,15 @@ export default function AdminSchedulePage() {
                               {subjects.map(s => {
                                 const sid = String(s.subject_id);
                                 const val = periodsConfig[grade]?.[sid] ?? defaultPeriodsUI(s.subject_name);
-                                const emoji = getSubjectEmoji(s.subject_name);
-                                const tierColor = val >= 3 ? '#4F46E5' : val === 2 ? '#10B981' : '#94A3B8';
+                                const tierColor = val >= 3 ? 'var(--primary)' : val === 2 ? 'var(--success)' : 'var(--text-muted)';
                                 return (
                                   <div key={s.subject_id} style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     padding: '7px 11px', borderRadius: 9,
-                                    background: `${tierColor}08`, border: `1px solid ${tierColor}20`,
+                                    background: `color-mix(in srgb, ${tierColor} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${tierColor} 13%, transparent)`,
                                   }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                                      <span style={{ fontSize: 15 }}>{emoji}</span>
-                                      <span style={{ color: '#374151', fontWeight: 600, fontSize: 12 }}>{s.subject_name}</span>
+                                      <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: 12 }}>{s.subject_name}</span>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                       <InputNumber
@@ -416,7 +395,7 @@ export default function AdminSchedulePage() {
                                         size="small"
                                         style={{ width: 58 }}
                                       />
-                                      <span style={{ color: '#9CA3AF', fontSize: 11 }}>tiết</span>
+                                      <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>tiết</span>
                                     </div>
                                   </div>
                                 );
@@ -431,16 +410,16 @@ export default function AdminSchedulePage() {
                     {grades.length > 0 && (
                       <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
                         {grades.map(grade => {
-                          const gp = GRADE_PALETTE[grade] || { color: '#4F46E5', bg: 'rgba(79,70,229,0.08)' };
+                          const gp = GRADE_PALETTE[grade] || { color: 'var(--primary)', bg: 'rgba(79,70,229,0.08)' };
                           const tot = Object.values(periodsConfig[grade] || {}).reduce((a, b) => a + Number(b || 0), 0);
                           return (
                             <div key={grade} style={{
                               flex: 1, textAlign: 'center', padding: '7px 10px',
-                              background: gp.bg, border: `1px solid ${gp.color}25`,
+                              background: gp.bg, border: `1px solid color-mix(in srgb, ${gp.color} 15%, transparent)`,
                               borderRadius: 10,
                             }}>
                               <div style={{ color: gp.color, fontWeight: 800, fontSize: 18 }}>{tot}</div>
-                              <div style={{ color: '#9CA3AF', fontSize: 10 }}>tiết/Khối {grade}</div>
+                              <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>tiết/Khối {grade}</div>
                             </div>
                           );
                         })}
@@ -454,37 +433,36 @@ export default function AdminSchedulePage() {
                       onClick={handleGenerate}
                       style={{
                         height: 46, borderRadius: 12, fontSize: 14, fontWeight: 700,
-                        background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                        background: 'linear-gradient(135deg, var(--primary), var(--accent))',
                         border: 'none', boxShadow: '0 4px 14px rgba(79,70,229,0.38)',
                       }}
                     >
-                      {isGenerating ? 'Đang tạo TKB...' : '🤖 Tạo TKB tự động'}
+                      {isGenerating ? 'Đang tạo TKB...' : ' Tạo TKB tự động'}
                     </Button>
                   </div>
 
                   {/* ── PREVIEW PANEL ──────────────────────────────────── */}
                   {generateResult && (
                     <div style={{
-                      background: '#fff', border: '1px solid #E5E7EB', borderRadius: 14, padding: 20,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20,
                       boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#10B981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📊</div>
-                        <Text strong style={{ color: '#111827', fontSize: 15 }}>Kết quả xem trước</Text>
+                        <Text strong style={{ color: 'var(--text-primary)', fontSize: 15 }}>Kết quả xem trước</Text>
                       </div>
 
                       {/* Summary cards */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                         {[
-                          { label: 'Tiết đã xếp', value: generateResult.stats?.total_scheduled, sub: `/ ${generateResult.stats?.total_requested} yêu cầu`, color: '#10B981', bg: 'rgba(16,185,129,0.09)' },
-                          { label: 'Tỷ lệ thành công', value: `${generateResult.stats?.success_rate}%`, sub: `${generateResult.failed?.length || 0} tiết thất bại`, color: generateResult.failed?.length ? '#F59E0B' : '#10B981', bg: generateResult.failed?.length ? 'rgba(245,158,11,0.09)' : 'rgba(16,185,129,0.09)' },
-                          { label: 'Điểm cân bằng', value: generateResult.stats?.balance_score, sub: 'Phân phối tải GV', color: (generateResult.stats?.balance_score || 0) >= 70 ? '#4F46E5' : '#F59E0B', bg: 'rgba(79,70,229,0.09)' },
+                          { label: 'Tiết đã xếp', value: generateResult.stats?.total_scheduled, sub: `/ ${generateResult.stats?.total_requested} yêu cầu`, color: 'var(--success)', bg: 'rgba(16,185,129,0.09)' },
+                          { label: 'Tỷ lệ thành công', value: `${generateResult.stats?.success_rate}%`, sub: `${generateResult.failed?.length || 0} tiết thất bại`, color: generateResult.failed?.length ? 'var(--warning)' : 'var(--success)', bg: generateResult.failed?.length ? 'rgba(245,158,11,0.09)' : 'rgba(16,185,129,0.09)' },
+                          { label: 'Điểm cân bằng', value: generateResult.stats?.balance_score, sub: 'Phân phối tải GV', color: (generateResult.stats?.balance_score || 0) >= 70 ? 'var(--primary)' : 'var(--warning)', bg: 'rgba(79,70,229,0.09)' },
                           { label: 'Lớp được xếp', value: generateResult.stats?.classes_count, sub: `${generateResult.stats?.subjects_count} môn`, color: '#8B5CF6', bg: 'rgba(139,92,246,0.09)' },
                         ].map((s, i) => (
-                          <div key={i} style={{ background: s.bg, borderRadius: 10, padding: '10px 12px', textAlign: 'center', border: `1px solid ${s.color}20` }}>
+                          <div key={i} style={{ background: s.bg, borderRadius: 10, padding: '10px 12px', textAlign: 'center', border: `1px solid color-mix(in srgb, ${s.color} 13%, transparent)` }}>
                             <div style={{ color: s.color, fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{s.value}</div>
-                            <div style={{ color: '#374151', fontSize: 11, fontWeight: 600, marginTop: 2 }}>{s.label}</div>
-                            <div style={{ color: '#9CA3AF', fontSize: 10 }}>{s.sub}</div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, marginTop: 2 }}>{s.label}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>{s.sub}</div>
                           </div>
                         ))}
                       </div>
@@ -492,26 +470,26 @@ export default function AdminSchedulePage() {
                       {/* Balance progress */}
                       <div style={{ marginBottom: 14 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                          <Text style={{ color: '#6B7280', fontSize: 12 }}>⚖️ Cân bằng tải GV</Text>
-                          <Text style={{ color: '#4F46E5', fontSize: 12, fontWeight: 700 }}>
+                          <Text style={{ color: 'var(--text-secondary)', fontSize: 12 }}> Cân bằng tải GV</Text>
+                          <Text style={{ color: 'var(--primary)', fontSize: 12, fontWeight: 700 }}>
                             {generateResult.stats?.balance_score}/100
                           </Text>
                         </div>
                         <Progress
                           percent={generateResult.stats?.balance_score || 0}
-                          strokeColor={{ '0%': '#4F46E5', '100%': '#10B981' }}
+                          strokeColor={{ '0%': 'var(--primary)', '100%': 'var(--success)' }}
                           trailColor="rgba(99,102,241,0.1)" strokeWidth={8} showInfo={false}
                         />
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-                          <span style={{ color: '#9CA3AF', fontSize: 11 }}>TB: {generateResult.stats?.avg_load} tiết/GV/tuần</span>
-                          <span style={{ color: '#9CA3AF', fontSize: 11 }}>Lệch ±{generateResult.stats?.std_dev}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>TB: {generateResult.stats?.avg_load} tiết/GV/tuần</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Lệch ±{generateResult.stats?.std_dev}</span>
                         </div>
                       </div>
 
                       {/* Teacher workload */}
                       <div style={{ marginBottom: 14 }}>
-                        <Text style={{ color: '#374151', fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                          📋 Tải giáo viên (tiết/tuần)
+                        <Text style={{ color: 'var(--text-secondary)', fontSize: 12, fontWeight: 700, display: 'block', marginBottom: 6 }}>
+                           Tải giáo viên (tiết/tuần)
                         </Text>
                         <div style={{ maxHeight: 240, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
                           {(generateResult.stats?.teachers || []).map(t => {
@@ -520,7 +498,7 @@ export default function AdminSchedulePage() {
                             return (
                               <div key={t.teacher_id} style={{
                                 display: 'flex', alignItems: 'center', gap: 7, padding: '5px 9px',
-                                borderRadius: 8, background: cfg.bg, border: `1px solid ${cfg.color}20`,
+                                borderRadius: 8, background: cfg.bg, border: `1px solid color-mix(in srgb, ${cfg.color} 13%, transparent)`,
                               }}>
                                 <div style={{
                                   width: 24, height: 24, borderRadius: 6, flexShrink: 0, background: 'rgba(255,255,255,0.7)',
@@ -528,10 +506,10 @@ export default function AdminSchedulePage() {
                                 }}>{t.full_name?.[0] || '?'}</div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                    <span style={{ color: '#374151', fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{t.full_name}</span>
+                                    <span style={{ color: 'var(--text-secondary)', fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{t.full_name}</span>
                                     <span style={{ color: cfg.color, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{t.periods_per_week} tiết</span>
                                   </div>
-                                  <div style={{ height: 4, background: '#E5E7EB', borderRadius: 3, overflow: 'hidden' }}>
+                                  <div style={{ height: 4, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
                                     <div style={{ height: '100%', width: `${pct}%`, background: cfg.color, borderRadius: 3, transition: 'width 0.4s ease' }} />
                                   </div>
                                 </div>
@@ -549,7 +527,7 @@ export default function AdminSchedulePage() {
                           description={
                             <div style={{ maxHeight: 100, overflowY: 'auto', marginTop: 4 }}>
                               {generateResult.failed.map((f, i) => (
-                                <div key={i} style={{ fontSize: 11, color: '#92400E', marginBottom: 2 }}>
+                                <div key={i} style={{ fontSize: 11, color: 'var(--warning)', marginBottom: 2 }}>
                                   • Lớp <strong>{f.class_label}</strong> – {f.subject_name} (tiết {f.slot_index}/{f.total_needed}): {f.reason}
                                 </div>
                               ))}
@@ -559,7 +537,7 @@ export default function AdminSchedulePage() {
                         />
                       ) : (
                         <Alert type="success" icon={<CheckCircleOutlined />}
-                          message="Không có xung đột! TKB hoàn toàn hợp lệ."
+                          message="Thời khóa biểu không có xung đột."
                           style={{ borderRadius: 10, marginBottom: 12 }} showIcon
                         />
                       )}
@@ -569,8 +547,8 @@ export default function AdminSchedulePage() {
                         <Button
                           type="primary" loading={isApplying} onClick={handleApply}
                           icon={<CheckCircleOutlined />}
-                          style={{ flex: 1, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#10B981,#059669)', border: 'none', fontWeight: 700 }}
-                        >✅ Áp dụng TKB</Button>
+                          style={{ flex: 1, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,var(--success),var(--success))', border: 'none', fontWeight: 700 }}
+                        > Áp dụng TKB</Button>
                         <Button icon={<ReloadOutlined />} onClick={handleGenerate} loading={isGenerating} style={{ height: 40, borderRadius: 10 }}>Tạo lại</Button>
                         <Button onClick={() => setGenerateResult(null)} style={{ height: 40, borderRadius: 10 }}>Đóng</Button>
                       </div>
@@ -591,9 +569,9 @@ export default function AdminSchedulePage() {
         open={editModal.open}
         onCancel={() => setEditModal({ open: false })}
         title={
-          <span style={{ color: '#111827' }}>
-            {editModal.existing ? '✏️ Chỉnh sửa tiết học' : '➕ Thêm tiết học'} —{' '}
-            <span style={{ color: '#4F46E5' }}>{DAY_NAMES[editModal.day]}, Tiết {editModal.period}</span>
+          <span style={{ color: 'var(--text-primary)' }}>
+            {editModal.existing ? ' Chỉnh sửa tiết học' : ' Thêm tiết học'} —{' '}
+            <span style={{ color: 'var(--primary)' }}>{DAY_NAMES[editModal.day]}, Tiết {editModal.period}</span>
           </span>
         }
         footer={null} width={460} destroyOnClose

@@ -38,7 +38,7 @@ export default function ChildReportPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>👨‍👧 Xem bảng điểm con</h1>
+        <h1>Xem bảng điểm con</h1>
         <p>Theo dõi kết quả học tập của con em</p>
       </div>
 
@@ -73,8 +73,7 @@ export default function ChildReportPage() {
           </div>
 
           {!selectedStudentId ? (
-            <div style={{ textAlign: 'center', padding: 60, color: '#6B7280' }}>
-              <div style={{ fontSize: 48 }}>🧑‍🎓</div>
+            <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-secondary)' }}>
               <div style={{ marginTop: 12 }}>Chọn con em để xem bảng điểm</div>
             </div>
           ) : isLoading ? (
@@ -93,10 +92,10 @@ export default function ChildReportPage() {
 // Score display table
 function ChildScoreTable({ report, semester }) {
   const ScoreCell = ({ value }) => {
-    if (value === null || value === undefined) return <Text style={{ color: '#475569' }}>—</Text>;
-    let color = '#111827';
-    if (value >= 8) color = '#10B981';
-    else if (value < 5) color = '#EF4444';
+    if (value === null || value === undefined) return <Text style={{ color: 'var(--text-secondary)' }}>—</Text>;
+    let color = 'var(--text-primary)';
+    if (value >= 8) color = 'var(--success)';
+    else if (value < 5) color = 'var(--danger)';
     return <span style={{ color, fontWeight: value >= 8 || value < 5 ? 700 : 400 }}>{value.toFixed(1)}</span>;
   };
 
@@ -143,20 +142,20 @@ function ChildScoreTable({ report, semester }) {
   };
 
   const columns = [
-    { title: 'Môn học', dataIndex: 'subject_name', render: v => <Text strong style={{ color: '#111827' }}>{v}</Text> },
+    { title: 'Môn học', dataIndex: 'subject_name', render: v => <Text strong style={{ color: 'var(--text-primary)' }}>{v}</Text> },
     ...[1, 2, 3, 4, 5].map(i => ({
       title: <span style={{ color: '#A78BFA' }}>TX{i}</span>,
       dataIndex: `tx${i}`, width: 70, align: 'center',
       render: v => <ScoreCell value={v} />,
     })),
-    { title: <span style={{ color: '#F59E0B' }}>GK</span>, dataIndex: 'gk', width: 70, align: 'center', render: v => <ScoreCell value={v} /> },
+    { title: <span style={{ color: 'var(--warning)' }}>GK</span>, dataIndex: 'gk', width: 70, align: 'center', render: v => <ScoreCell value={v} /> },
     { title: <span style={{ color: '#F87171' }}>CK</span>, dataIndex: 'ck', width: 70, align: 'center', render: v => <ScoreCell value={v} /> },
     {
-      title: <span style={{ color: '#10B981', fontWeight: 800 }}>ĐTB</span>,
+      title: <span style={{ color: 'var(--success)', fontWeight: 800 }}>ĐTB</span>,
       dataIndex: 'dtb', width: 90, align: 'center',
       render: v => v != null
-        ? <strong style={{ color: v >= 8 ? '#10B981' : v < 5 ? '#EF4444' : '#F59E0B', fontSize: 14 }}>{v.toFixed(2)}</strong>
-        : <Text style={{ color: '#475569' }}>—</Text>,
+        ? <strong style={{ color: v >= 8 ? 'var(--success)' : v < 5 ? 'var(--danger)' : 'var(--warning)', fontSize: 14 }}>{v.toFixed(2)}</strong>
+        : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>,
     },
   ];
 
@@ -165,19 +164,19 @@ function ChildScoreTable({ report, semester }) {
       {report?.student && (
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
           {[
-            { label: 'Họ tên', value: report.student.full_name, color: '#4F46E5' },
+            { label: 'Họ tên', value: report.student.full_name, color: 'var(--primary)' },
             { label: 'Lớp', value: report.student.class, color: '#60A5FA' },
             { label: 'Năm học', value: report.student.year, color: '#34D399' },
             {
               label: 'ĐTB tổng kết',
               value: report.overall_avg?.toFixed(2),
-              color: report.overall_avg >= 8 ? '#10B981' : report.overall_avg < 5 ? '#EF4444' : '#F59E0B',
+              color: report.overall_avg >= 8 ? 'var(--success)' : report.overall_avg < 5 ? 'var(--danger)' : 'var(--warning)',
             },
-            { label: 'Học lực', value: report.academic_classification, color: '#F59E0B' },
+            { label: 'Học lực', value: report.academic_classification, color: 'var(--warning)' },
             { label: 'Hạnh kiểm', value: report.conduct_classification, color: '#EC4899' },
           ].map(item => (
-            <div key={item.label} style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 10, padding: '10px 16px', minWidth: 140 }}>
-              <div style={{ color: '#6B7280', fontSize: 11 }}>{item.label}</div>
+            <div key={item.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 16px', minWidth: 140 }}>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{item.label}</div>
               <div style={{ color: item.color, fontWeight: 700, fontSize: 14 }}>{item.value || '—'}</div>
             </div>
           ))}
@@ -188,16 +187,15 @@ function ChildScoreTable({ report, semester }) {
         <div style={{ marginBottom: 16 }}>
           <Button
             onClick={handleExportCSV}
-            style={{ borderRadius: 8, borderColor: '#10B981', color: '#10B981', fontWeight: 600 }}
+            style={{ borderRadius: 8, borderColor: 'var(--success)', color: 'var(--success)', fontWeight: 600 }}
           >
-            📥 Tải bảng điểm con (CSV)
+             Tải bảng điểm con (CSV)
           </Button>
         </div>
       )}
 
       {(!report?.subjects || report.subjects.length === 0) ? (
-        <div style={{ textAlign: 'center', padding: 40, color: '#9CA3AF' }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
           <div>Chưa có điểm cho năm học và học kỳ này</div>
         </div>
       ) : (

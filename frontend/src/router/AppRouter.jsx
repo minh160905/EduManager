@@ -36,6 +36,7 @@ import ChildCommentsPage from '../pages/parent/ChildCommentsPage';
 
 // Notifications (shared)
 import NotificationsPage from '../pages/shared/NotificationsPage';
+import ChatbotPage from '../pages/shared/ChatbotPage';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -98,6 +99,7 @@ const AppRouter = () => {
 
           {/* Shared */}
           <Route path="notifications" element={<ProtectedRoute allowedRoles={['TEACHER', 'HEAD_OF_DEPARTMENT', 'PRINCIPAL', 'STUDENT', 'PARENT']}><NotificationsPage /></ProtectedRoute>} />
+          <Route path="chatbot" element={<ChatbotPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -11,14 +11,14 @@ const { TextArea } = Input;
 
 // ── Conduct config ────────────────────────────────────────────────────────────
 const CONDUCT_OPTIONS = [
-  { value: 'EXCELLENT', label: 'Tốt',        color: '#10B981', bg: '#ECFDF5', border: '#6EE7B7' },
-  { value: 'GOOD',      label: 'Khá',        color: '#2563EB', bg: '#EFF6FF', border: '#93C5FD' },
-  { value: 'AVERAGE',   label: 'Trung bình', color: '#D97706', bg: '#FFFBEB', border: '#FCD34D' },
-  { value: 'WEAK',      label: 'Yếu',        color: '#EF4444', bg: '#FEF2F2', border: '#FCA5A5' },
+  { value: 'EXCELLENT', label: 'Tốt',        color: 'var(--success)', bg: 'var(--success-soft)', border: '#6EE7B7' },
+  { value: 'GOOD',      label: 'Khá',        color: 'var(--info)', bg: 'var(--info-soft)', border: '#93C5FD' },
+  { value: 'AVERAGE',   label: 'Trung bình', color: 'var(--warning)', bg: 'var(--warning-soft)', border: '#FCD34D' },
+  { value: 'WEAK',      label: 'Yếu',        color: 'var(--danger)', bg: 'var(--danger-soft)', border: '#FCA5A5' },
 ];
 
 const ConductBadge = ({ rating }) => {
-  if (!rating) return <span style={{ color: '#D1D5DB' }}>—</span>;
+  if (!rating) return <span style={{ color: 'var(--border)' }}>—</span>;
   const cfg = CONDUCT_OPTIONS.find(o => o.value === rating);
   if (!cfg) return null;
   return (
@@ -52,28 +52,28 @@ function CommentsTab({ classInstanceId, semester }) {
 
   const sendMut = useMutation({
     mutationFn: (d) => commentsApi.create(d),
-    onSuccess: () => { qc.invalidateQueries(['comments']); setCommentText(''); message.success('💬 Nhận xét đã được gửi'); },
+    onSuccess: () => { qc.invalidateQueries(['comments']); setCommentText(''); message.success(' Nhận xét đã được gửi'); },
     onError: (e) => message.error(e.response?.data?.message || 'Lỗi gửi nhận xét'),
   });
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 16 }}>
+    <div className="comments-layout" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 16 }}>
       {/* Student list */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid #E5E7EB', color: '#4F46E5', fontWeight: 700, fontSize: 13 }}>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', color: 'var(--primary)', fontWeight: 700, fontSize: 13 }}>
           Danh sách học sinh ({students.length})
         </div>
         <div style={{ overflowY: 'auto', maxHeight: 500 }}>
           {students.length === 0
-            ? <div style={{ padding: 20, textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>Chọn lớp để xem danh sách</div>
+            ? <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Chọn lớp để xem danh sách</div>
             : students.map(s => (
               <div key={s.student_id} onClick={() => setSelectedStudent(s)} style={{
                 padding: '10px 16px', cursor: 'pointer', transition: 'background 0.15s',
-                background: selectedStudent?.student_id === s.student_id ? '#EEF2FF' : 'transparent',
-                borderLeft: `3px solid ${selectedStudent?.student_id === s.student_id ? '#4F46E5' : 'transparent'}`,
+                background: selectedStudent?.student_id === s.student_id ? 'var(--primary-soft)' : 'transparent',
+                borderLeft: `3px solid ${selectedStudent?.student_id === s.student_id ? 'var(--primary)' : 'transparent'}`,
               }}>
-                <div style={{ color: '#111827', fontWeight: 600, fontSize: 13 }}>{s.user?.full_name}</div>
-                <div style={{ color: '#9CA3AF', fontSize: 11 }}>{s.student_code}</div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13 }}>{s.user?.full_name} {s.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 11 }}>{s.student_code}</div>
               </div>
             ))
           }
@@ -81,9 +81,9 @@ function CommentsTab({ classInstanceId, semester }) {
       </div>
 
       {/* Comment area */}
-      <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 12, padding: 20 }}>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20 }}>
         {!selectedStudent ? (
-          <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
             <CommentOutlined style={{ fontSize: 40, marginBottom: 12, display: 'block' }} />
             Chọn học sinh để xem và gửi nhận xét
           </div>
@@ -92,29 +92,29 @@ function CommentsTab({ classInstanceId, semester }) {
             <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: '50%',
-                background: 'linear-gradient(135deg,#4F46E5,#7C3AED)',
+                background: 'linear-gradient(135deg,var(--primary),var(--accent))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontWeight: 700, fontSize: 16, flexShrink: 0,
               }}>{selectedStudent.user?.full_name?.[0]}</div>
               <div>
-                <Text strong style={{ color: '#111827' }}>{selectedStudent.user?.full_name}</Text>
-                <Text style={{ color: '#9CA3AF', marginLeft: 8, fontSize: 12 }}>Học kỳ {semester}</Text>
+                <Text strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.user?.full_name}</Text>
+                <Text style={{ color: 'var(--text-muted)', marginLeft: 8, fontSize: 12 }}>Học kỳ {semester}</Text>
               </div>
             </div>
 
             <div style={{ maxHeight: 280, overflowY: 'auto', marginBottom: 16 }}>
               {isLoading ? <Spin /> : comments.length === 0
-                ? <div style={{ padding: 20, textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>Chưa có nhận xét nào trong học kỳ này</div>
+                ? <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>Chưa có nhận xét nào trong học kỳ này</div>
                 : comments.map(c => (
                   <div key={c.comment_id} style={{
-                    background: '#F8FAFF', borderRadius: 10, padding: '10px 14px', marginBottom: 10,
-                    border: '1px solid #E5E7EB',
+                    background: 'var(--bg-page)', borderRadius: 10, padding: '10px 14px', marginBottom: 10,
+                    border: '1px solid var(--border)',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <Text strong style={{ color: '#4F46E5', fontSize: 13 }}>{c.teacher?.full_name}</Text>
-                      <Text style={{ color: '#9CA3AF', fontSize: 11 }}>{dayjs(c.created_at).format('DD/MM/YYYY HH:mm')}</Text>
+                      <Text strong style={{ color: 'var(--primary)', fontSize: 13 }}>{c.teacher?.full_name}</Text>
+                      <Text style={{ color: 'var(--text-muted)', fontSize: 11 }}>{dayjs(c.created_at).format('DD/MM/YYYY HH:mm')}</Text>
                     </div>
-                    <Text style={{ color: '#111827', fontSize: 13 }}>{c.content}</Text>
+                    <Text style={{ color: 'var(--text-primary)', fontSize: 13 }}>{c.content}</Text>
                   </div>
                 ))
               }
@@ -172,7 +172,7 @@ function ConductTab({ classInstanceId, semester }) {
     onSuccess: () => {
       qc.invalidateQueries(['conducts']);
       setEditingId(null); setDraftRating(null); setDraftNote('');
-      message.success('✅ Đã lưu đánh giá hạnh kiểm');
+      message.success(' Đã lưu đánh giá hạnh kiểm');
     },
     onError: (e) => message.error(e.response?.data?.message || 'Lỗi lưu hạnh kiểm'),
   });
@@ -193,7 +193,7 @@ function ConductTab({ classInstanceId, semester }) {
 
   if (!classInstanceId) {
     return (
-      <div style={{ textAlign: 'center', padding: 60, color: '#9CA3AF' }}>
+      <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
         <StarOutlined style={{ fontSize: 40, marginBottom: 12, display: 'block' }} />
         Chọn lớp để đánh giá hạnh kiểm
       </div>
@@ -203,10 +203,9 @@ function ConductTab({ classInstanceId, semester }) {
   // Check if teacher is homeroom of this class
   if (!homeroomClass || homeroomClass.class_instance_id !== classInstanceId) {
     return (
-      <div style={{ textAlign: 'center', padding: 60, color: '#EF4444' }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>🔒</div>
+      <div style={{ textAlign: 'center', padding: 60, color: 'var(--danger)' }}>
         <div style={{ fontWeight: 600 }}>Chỉ GVCN mới có thể đánh giá hạnh kiểm</div>
-        <div style={{ color: '#9CA3AF', fontSize: 13, marginTop: 4 }}>
+        <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
           {homeroomClass ? 'Vui lòng chọn lớp bạn chủ nhiệm' : 'Bạn hiện không chủ nhiệm lớp nào trong hệ thống'}
         </div>
       </div>
@@ -219,24 +218,24 @@ function ConductTab({ classInstanceId, semester }) {
     <div>
       {/* Stats row */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ background: '#F8FAFF', border: '1px solid #E5E7EB', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#4F46E5' }}>{students.length}</div>
-          <div style={{ color: '#6B7280', fontSize: 12 }}>Tổng học sinh</div>
+        <div style={{ background: 'var(--bg-page)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{students.length}</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Tổng học sinh</div>
         </div>
-        <div style={{ background: '#ECFDF5', border: '1px solid #6EE7B7', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#10B981' }}>{rated}</div>
-          <div style={{ color: '#6B7280', fontSize: 12 }}>Đã đánh giá</div>
+        <div style={{ background: 'var(--success-soft)', border: '1px solid #6EE7B7', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)' }}>{rated}</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Đã đánh giá</div>
         </div>
-        <div style={{ background: '#FFF7ED', border: '1px solid #FCD34D', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#D97706' }}>{students.length - rated}</div>
-          <div style={{ color: '#6B7280', fontSize: 12 }}>Chưa đánh giá</div>
+        <div style={{ background: 'var(--warning-soft)', border: '1px solid var(--warning)', borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--warning)' }}>{students.length - rated}</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Chưa đánh giá</div>
         </div>
         {CONDUCT_OPTIONS.map(o => (
           <div key={o.value} style={{ background: o.bg, border: `1px solid ${o.border}`, borderRadius: 10, padding: '10px 20px', textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: o.color }}>
               {conducts.filter(c => c.rating === o.value).length}
             </div>
-            <div style={{ color: '#6B7280', fontSize: 12 }}>{o.label}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{o.label}</div>
           </div>
         ))}
       </div>
@@ -252,7 +251,7 @@ function ConductTab({ classInstanceId, semester }) {
 
               return (
                 <div key={s.student_id} style={{
-                  background: '#fff', border: `1px solid ${isEditing ? '#C7D2FE' : '#E5E7EB'}`,
+                  background: 'var(--bg-card)', border: `1px solid ${isEditing ? 'var(--primary-border)' : 'var(--border)'}`,
                   borderRadius: 12, padding: '14px 18px',
                   boxShadow: isEditing ? '0 0 0 3px rgba(79,70,229,0.08)' : 'none',
                   transition: 'all 0.2s',
@@ -261,15 +260,15 @@ function ConductTab({ classInstanceId, semester }) {
                     {/* Avatar */}
                     <div style={{
                       width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg,#4F46E5,#7C3AED)',
+                      background: 'linear-gradient(135deg,var(--primary),var(--accent))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: '#fff', fontWeight: 700, fontSize: 16,
                     }}>{s.user?.full_name?.[0]}</div>
 
                     {/* Name */}
                     <div style={{ flex: 1, minWidth: 120 }}>
-                      <div style={{ color: '#111827', fontWeight: 700, fontSize: 14 }}>{s.user?.full_name}</div>
-                      <div style={{ color: '#9CA3AF', fontSize: 12 }}>{s.student_code}</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 14 }}>{s.user?.full_name} {s.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{s.student_code}</div>
                     </div>
 
                     {/* Current rating or edit */}
@@ -297,7 +296,7 @@ function ConductTab({ classInstanceId, semester }) {
                         <Button type="primary" size="small" icon={<CheckCircleOutlined />}
                           loading={upsertMut.isPending}
                           onClick={() => save(s)}
-                          style={{ borderRadius: 8, background: '#10B981', border: 'none', fontWeight: 600 }}>
+                          style={{ borderRadius: 8, background: 'var(--success)', border: 'none', fontWeight: 600 }}>
                           Lưu
                         </Button>
                         <Button size="small" onClick={() => setEditingId(null)}
@@ -306,8 +305,8 @@ function ConductTab({ classInstanceId, semester }) {
                     ) : (
                       <Button size="small" onClick={() => startEdit(s)}
                         style={{
-                          borderRadius: 8, borderColor: '#C7D2FE', color: '#4F46E5',
-                          fontWeight: 600, background: '#EEF2FF',
+                          borderRadius: 8, borderColor: 'var(--primary-border)', color: 'var(--primary)',
+                          fontWeight: 600, background: 'var(--primary-soft)',
                         }}>
                         {existing ? 'Chỉnh sửa' : 'Đánh giá'}
                       </Button>
@@ -327,8 +326,8 @@ function ConductTab({ classInstanceId, semester }) {
 
                   {/* Show existing note if not editing */}
                   {!isEditing && existing?.note && (
-                    <div style={{ marginTop: 8, color: '#6B7280', fontSize: 12, fontStyle: 'italic', paddingLeft: 50 }}>
-                      📝 {existing.note}
+                    <div style={{ marginTop: 8, color: 'var(--text-secondary)', fontSize: 12, fontStyle: 'italic', paddingLeft: 50 }}>
+                       {existing.note}
                     </div>
                   )}
                 </div>
@@ -370,14 +369,14 @@ export default function CommentsPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>💬 Nhận xét & Hạnh kiểm học sinh</h1>
+        <h1>Nhận xét & Hạnh kiểm học sinh</h1>
         <p>Gửi nhận xét và đánh giá hạnh kiểm cho từng học sinh theo học kỳ</p>
       </div>
 
       {/* Filters */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         <Select
-          placeholder="🏫 Chọn lớp" style={{ width: 220 }}
+          placeholder="Chọn lớp" style={{ width: 220 }}
           value={classInstanceId}
           onChange={v => setClassInstanceId(v)}
           options={(isHomeroomTab ? (homeroomClass ? [homeroomClass] : []) : myClasses).map(c => ({
@@ -391,11 +390,11 @@ export default function CommentsPage() {
         />
         {homeroomClass && classInstanceId === homeroomClass.class_instance_id && (
           <span style={{
-            background: '#ECFDF5', border: '1px solid #6EE7B7',
+            background: 'var(--success-soft)', border: '1px solid #6EE7B7',
             borderRadius: 20, padding: '4px 14px',
-            color: '#059669', fontWeight: 600, fontSize: 12,
+            color: 'var(--success)', fontWeight: 600, fontSize: 12,
           }}>
-            ⭐ Lớp chủ nhiệm của bạn
+             Lớp chủ nhiệm của bạn
           </span>
         )}
       </div>
@@ -405,7 +404,7 @@ export default function CommentsPage() {
         activeKey={activeTab}
         onChange={setActiveTab}
         type="card"
-        style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: '16px 20px' }}
+        style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', padding: '16px 20px' }}
         items={[
           {
             key: 'comments',

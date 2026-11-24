@@ -1,10 +1,12 @@
 const prisma = require('../../config/prisma');
+const { assertClassAccess, assertStudentAccess } = require('../../utils/access');
 
 /**
  * Get pivot score table for a class (teacher view)
  * Returns one row per student with TX1-TX5, GK, CK, DTB columns
  */
-const getClassScores = async ({ classInstanceId, subjectId, semester }) => {
+const getClassScores = async ({ classInstanceId, subjectId, semester }, user) => {
+  await assertClassAccess(user, classInstanceId, { subjectId, assignmentOnly: true });
   // Resolve year_id from class instance
   const classInstance = await prisma.classInstance.findUnique({
     where: { class_instance_id: Number(classInstanceId) },
@@ -13,7 +15,7 @@ const getClassScores = async ({ classInstanceId, subjectId, semester }) => {
   const year_id = classInstance?.year_id;
 
   const students = await prisma.student.findMany({
-    where: { class_instance_id: Number(classInstanceId) },
+    where: { enrollments: { some: { class_instance_id: Number(classInstanceId) } } },
     include: {
       user: { select: { full_name: true } },
       scores: {
@@ -47,6 +49,7 @@ const getClassScores = async ({ classInstanceId, subjectId, semester }) => {
       student_id: student.student_id,
       full_name: student.user.full_name,
       student_code: student.student_code,
+      graduated_at: student.graduated_at,
       tx1: txScores[0]?.score_value ?? null,
       tx2: txScores[1]?.score_value ?? null,
       tx3: txScores[2]?.score_value ?? null,
@@ -64,18 +67,18 @@ const getClassScores = async ({ classInstanceId, subjectId, semester }) => {
 /**
  * Helper to verify teacher assignment and academic year lock status
  */
-const checkScorePermission = async (createdBy, classInstanceId, subjectId, semester, yearId = null) => {
+const checkScorePermission = async (createdBy, classInstanceId, subjectId, semester, yearId = null, db = prisma) => {
   // 1. Check Year Lock
   let resolvedYearId = yearId;
   if (!resolvedYearId && classInstanceId) {
-    const ci = await prisma.classInstance.findUnique({
+    const ci = await db.classInstance.findUnique({
       where: { class_instance_id: Number(classInstanceId) },
       select: { year_id: true },
     });
     resolvedYearId = ci?.year_id || null;
   }
   if (resolvedYearId) {
-    const year = await prisma.academicYear.findUnique({
+    const year = await db.academicYear.findUnique({
       where: { year_id: Number(resolvedYearId) },
       select: { is_locked_sem1: true, is_locked_sem2: true },
     });
@@ -86,7 +89,7 @@ const checkScorePermission = async (createdBy, classInstanceId, subjectId, semes
   }
 
   // 2. Check Teacher Assignment
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { user_id: Number(createdBy) },
     include: { role: true },
   });
@@ -94,7 +97,7 @@ const checkScorePermission = async (createdBy, classInstanceId, subjectId, semes
     if (!classInstanceId) {
       throw { statusCode: 400, message: 'Không tìm thấy lớp học của học sinh để kiểm tra phân công' };
     }
-    const assignment = await prisma.teacherAssignment.findFirst({
+    const assignment = await db.teacherAssignment.findFirst({
       where: {
         teacher_id: Number(createdBy),
         class_instance_id: Number(classInstanceId),
@@ -110,8 +113,8 @@ const checkScorePermission = async (createdBy, classInstanceId, subjectId, semes
 /**
  * Helper: write a ScoreHistory record
  */
-const recordHistory = async (scoreId, changedBy, oldValue, newValue) => {
-  await prisma.scoreHistory.create({
+const recordHistory = async (scoreId, changedBy, oldValue, newValue, db = prisma) => {
+  await db.scoreHistory.create({
     data: {
       score_id: scoreId,
       changed_by: Number(changedBy),
@@ -124,24 +127,40 @@ const recordHistory = async (scoreId, changedBy, oldValue, newValue) => {
 /**
  * Upsert a score (insert or update based on type+order_no)
  */
-const upsertScore = async (data, createdBy) => {
+const upsertScore = async (data, createdBy, db = prisma) => {
   const { student_id, subject_id, semester, score_type, score_value, order_no, class_instance_id } = data;
+
+  if (![1, 2].includes(Number(semester))) throw { statusCode: 400, message: 'Học kỳ không hợp lệ' };
+  if (!['TX', 'GK', 'CK'].includes(score_type)) throw { statusCode: 400, message: 'Loại điểm không hợp lệ' };
+  const numericScore = Number(score_value);
+  if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 10) {
+    throw { statusCode: 400, message: 'Điểm phải từ 0 đến 10' };
+  }
+  const normalizedOrder = score_type === 'TX' ? Number(order_no) : 0;
+  if (score_type === 'TX' && (!Number.isInteger(normalizedOrder) || normalizedOrder < 1 || normalizedOrder > 5)) {
+    throw { statusCode: 400, message: 'Thứ tự điểm TX phải từ 1 đến 5' };
+  }
 
   let resolvedClassInstanceId = class_instance_id;
   if (!resolvedClassInstanceId) {
-    const student = await prisma.student.findUnique({
+    const student = await db.student.findUnique({
       where: { student_id: Number(student_id) },
       select: { class_instance_id: true },
     });
     resolvedClassInstanceId = student?.class_instance_id;
   }
 
-  await checkScorePermission(createdBy, resolvedClassInstanceId, subject_id, semester);
+  const enrollment = resolvedClassInstanceId && await db.studentEnrollment.findFirst({
+    where: { student_id: Number(student_id), class_instance_id: Number(resolvedClassInstanceId) },
+  });
+  if (!enrollment) throw { statusCode: 400, message: 'Học sinh không thuộc lớp được chọn' };
+
+  await checkScorePermission(createdBy, resolvedClassInstanceId, subject_id, semester, null, db);
 
   // Auto-resolve year_id from class instance
   let year_id = null;
   if (resolvedClassInstanceId) {
-    const ci = await prisma.classInstance.findUnique({
+    const ci = await db.classInstance.findUnique({
       where: { class_instance_id: Number(resolvedClassInstanceId) },
       select: { year_id: true },
     });
@@ -151,49 +170,49 @@ const upsertScore = async (data, createdBy) => {
   // Validate TX count
   if (score_type === 'TX') {
     const txWhere = { student_id: Number(student_id), subject_id: Number(subject_id), semester: Number(semester), score_type: 'TX', ...(year_id ? { year_id } : {}) };
-    const existingTX = await prisma.score.count({ where: txWhere });
-    const existing = await prisma.score.findFirst({
-      where: { ...txWhere, order_no: Number(order_no) },
+    const existingTX = await db.score.count({ where: txWhere });
+    const existing = await db.score.findFirst({
+      where: { ...txWhere, order_no: normalizedOrder },
     });
     if (!existing && existingTX >= 5) throw { statusCode: 400, message: 'Tối đa 5 điểm TX mỗi học kỳ' };
   }
 
-  if (score_value < 0 || score_value > 10) throw { statusCode: 400, message: 'Điểm phải từ 0 đến 10' };
-
   // Find existing score to upsert
-  const where = {
+  const baseWhere = {
     student_id: Number(student_id),
     subject_id: Number(subject_id),
     semester: Number(semester),
     score_type,
-    ...(score_type === 'TX' ? { order_no: Number(order_no) } : {}),
     ...(year_id ? { year_id } : {}),
   };
+  const where = score_type === 'TX'
+    ? { ...baseWhere, order_no: normalizedOrder }
+    : { ...baseWhere, OR: [{ order_no: 0 }, { order_no: null }] };
 
-  const existing = await prisma.score.findFirst({ where });
+  const existing = await db.score.findFirst({ where });
 
   let result;
   if (existing) {
     const oldValue = existing.score_value;
-    result = await prisma.score.update({
+    result = await db.score.update({
       where: { score_id: existing.score_id },
-      data: { score_value: Number(score_value), created_by: createdBy },
+      data: { score_value: numericScore, order_no: normalizedOrder, created_by: createdBy },
     });
-    await recordHistory(existing.score_id, createdBy, oldValue, score_value);
+    await recordHistory(existing.score_id, createdBy, oldValue, numericScore, db);
   } else {
-    result = await prisma.score.create({
+    result = await db.score.create({
       data: {
         student_id: Number(student_id),
         subject_id: Number(subject_id),
         semester: Number(semester),
         score_type,
-        score_value: Number(score_value),
-        order_no: score_type === 'TX' ? Number(order_no) : null,
+        score_value: numericScore,
+        order_no: normalizedOrder,
         created_by: createdBy,
         ...(year_id ? { year_id } : {}),
       },
     });
-    await recordHistory(result.score_id, createdBy, null, score_value);
+    await recordHistory(result.score_id, createdBy, null, numericScore, db);
   }
   return result;
 };
@@ -202,40 +221,49 @@ const upsertScore = async (data, createdBy) => {
  * Batch upsert scores (multiple students at once)
  */
 const batchUpsert = async (scores, createdBy) => {
-  const results = [];
-  for (const score of scores) {
-    results.push(await upsertScore(score, createdBy));
+  if (!Array.isArray(scores) || scores.length === 0) {
+    throw { statusCode: 400, message: 'Danh sách điểm không được để trống' };
   }
-  return results;
+  return prisma.$transaction(async (tx) => {
+    const results = [];
+    for (const score of scores) {
+      results.push(await upsertScore(score, createdBy, tx));
+    }
+    return results;
+  });
 };
 
 const updateScore = async (id, data, updatedBy) => {
   const { score_value } = data;
-  if (score_value < 0 || score_value > 10) throw { statusCode: 400, message: 'Điểm phải từ 0 đến 10' };
+  const numericScore = Number(score_value);
+  if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 10) {
+    throw { statusCode: 400, message: 'Điểm phải từ 0 đến 10' };
+  }
 
   const existing = await prisma.score.findUnique({
     where: { score_id: Number(id) },
-    include: {
-      student: { select: { class_instance_id: true } }
-    }
+    include: { student: { select: { class_instance_id: true } } },
   });
   if (!existing) throw { statusCode: 404, message: 'Score not found' };
-
-  await checkScorePermission(updatedBy, existing.student.class_instance_id, existing.subject_id, existing.semester, existing.year_id);
+  const enrollment = await prisma.studentEnrollment.findFirst({
+    where: { student_id: existing.student_id, year_id: existing.year_id },
+  });
+  await checkScorePermission(updatedBy, enrollment?.class_instance_id || existing.student.class_instance_id, existing.subject_id, existing.semester, existing.year_id);
 
   const oldValue = existing.score_value;
   const result = await prisma.score.update({
     where: { score_id: Number(id) },
-    data: { score_value: Number(score_value), created_by: updatedBy },
+    data: { score_value: numericScore, created_by: updatedBy },
   });
-  await recordHistory(Number(id), updatedBy, oldValue, score_value);
+  await recordHistory(Number(id), updatedBy, oldValue, numericScore);
   return result;
 };
 
 /**
  * Get edit history of all scores for a student in a specific subject + semester
  */
-const getStudentScoreHistory = async ({ studentId, subjectId, semester, yearId }) => {
+const getStudentScoreHistory = async ({ studentId, subjectId, semester, yearId }, user) => {
+  await assertStudentAccess(user, studentId, { subjectId, assignmentOnly: true, yearId });
   // Resolve year_id if not provided
   let resolvedYearId = yearId ? Number(yearId) : null;
   if (!resolvedYearId) {

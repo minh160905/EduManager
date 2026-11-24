@@ -54,7 +54,7 @@ async function main() {
         semester: sem,
         score_type: 'GK',
         score_value: semData.gk,
-        order_no: null,
+        order_no: 0,
       });
 
       // CK
@@ -65,7 +65,7 @@ async function main() {
         semester: sem,
         score_type: 'CK',
         score_value: semData.ck,
-        order_no: null,
+        order_no: 0,
       });
     }
   }

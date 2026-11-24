@@ -9,6 +9,7 @@ const USER_SELECT = {
     select: {
       student_id: true,
       student_code: true,
+      graduated_at: true,
     }
   },
   teacher_assignments: {
@@ -23,8 +24,8 @@ const USER_SELECT = {
   }
 };
 
-const generateStudentCode = async () => {
-  const students = await prisma.student.findMany({
+const generateStudentCode = async (db = prisma) => {
+  const students = await db.student.findMany({
     select: { student_code: true },
     where: { student_code: { startsWith: 'HS' } }
   });
@@ -53,6 +54,7 @@ const USER_SELECT_DETAILED = {
     select: {
       student_id: true,
       student_code: true,
+      graduated_at: true,
       date_of_birth: true,
       gender: true,
       hometown: true,
@@ -63,6 +65,10 @@ const USER_SELECT_DETAILED = {
           class: { select: { class_code: true } },
           year: { select: { name: true } },
         },
+      },
+      enrollments: {
+        select: { class_instance: { select: { grade: true, class: { select: { class_code: true } }, year: { select: { name: true } } } } },
+        orderBy: { year_id: 'asc' },
       },
     },
   },
@@ -76,6 +82,7 @@ const USER_SELECT_DETAILED = {
             select: {
               student_id: true,
               student_code: true,
+              graduated_at: true,
               user: { select: { full_name: true } },
               class_instance: {
                 select: {
@@ -135,40 +142,49 @@ const getById = async (id) => {
 
 const create = async (data) => {
   const { username, password, full_name, email, phone, role_id, student_ids } = data;
+  if (!username || !password || !role_id) {
+    throw { statusCode: 400, message: 'Tên đăng nhập, mật khẩu và vai trò là bắt buộc' };
+  }
   const hash = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: { username, password_hash: hash, full_name, email, phone, role_id: Number(role_id) },
-    include: { role: true },
-  });
-
-  const roleName = user.role.role_name;
-  if (roleName === 'STUDENT') {
-    const student_code = await generateStudentCode();
-    await prisma.student.create({
-      data: {
-        user_id: user.user_id,
-        student_code,
-        gender: data.gender || null,
-        date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : null,
-        hometown: data.hometown || null,
-        class_instance_id: data.class_instance_id ? Number(data.class_instance_id) : null,
-      }
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { username, password_hash: hash, full_name, email, phone, role_id: Number(role_id) },
+      include: { role: true },
     });
-  } else if (roleName === 'PARENT') {
-    const parent = await prisma.parent.create({ data: { user_id: user.user_id } });
-    if (student_ids && Array.isArray(student_ids) && student_ids.length > 0) {
-      const uniqueStudentIds = Array.from(new Set(student_ids.map(Number)));
-      const studentParents = uniqueStudentIds.map(sid => ({
-        parent_id: parent.parent_id,
-        student_id: sid
-      }));
-      await prisma.studentParent.createMany({ data: studentParents });
-    }
-  }
 
-  const { password_hash, ...safeUser } = user;
-  return safeUser;
+    const roleName = user.role.role_name;
+    if (roleName === 'STUDENT') {
+      const student_code = await generateStudentCode(tx);
+      const student = await tx.student.create({
+        data: {
+          user_id: user.user_id,
+          student_code,
+          gender: data.gender || null,
+          date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : null,
+          hometown: data.hometown || null,
+          class_instance_id: data.class_instance_id ? Number(data.class_instance_id) : null,
+        },
+      });
+      if (student.class_instance_id) {
+        const assignedClass = await tx.classInstance.findUnique({ where: { class_instance_id: student.class_instance_id }, select: { year_id: true } });
+        await tx.studentEnrollment.create({ data: { student_id: student.student_id, class_instance_id: student.class_instance_id, year_id: assignedClass.year_id } });
+      }
+    } else if (roleName === 'PARENT') {
+      const parent = await tx.parent.create({ data: { user_id: user.user_id } });
+      if (student_ids && Array.isArray(student_ids) && student_ids.length > 0) {
+        const uniqueStudentIds = Array.from(new Set(student_ids.map(Number)));
+        const studentParents = uniqueStudentIds.map((sid) => ({
+          parent_id: parent.parent_id,
+          student_id: sid,
+        }));
+        await tx.studentParent.createMany({ data: studentParents });
+      }
+    }
+
+    const { password_hash, ...safeUser } = user;
+    return safeUser;
+  });
 };
 
 const update = async (id, data) => {
@@ -181,44 +197,55 @@ const update = async (id, data) => {
     userFields.password_hash = await bcrypt.hash(password, 10);
   }
 
-  // ── 2. Update bảng users ─────────────────────────────────────────────────
-  const updatedUser = await prisma.user.update({
-    where: { user_id: numId },
-    data: userFields,
-    select: USER_SELECT,
+  return prisma.$transaction(async (tx) => {
+    // ── 2. Update bảng users ───────────────────────────────────────────────
+    const updatedUser = await tx.user.update({
+      where: { user_id: numId },
+      data: userFields,
+      select: USER_SELECT,
+    });
+
+    // ── 3. Nếu là học sinh, update bảng students ───────────────────────────
+    const existingStudent = await tx.student.findUnique({ where: { user_id: numId } });
+    if (existingStudent) {
+      const studentData = {};
+      if (date_of_birth !== undefined) studentData.date_of_birth = date_of_birth ? new Date(date_of_birth) : null;
+      if (gender !== undefined) studentData.gender = gender || null;
+      if (hometown !== undefined) studentData.hometown = hometown || null;
+      if (class_instance_id !== undefined) {
+        studentData.class_instance_id = class_instance_id ? Number(class_instance_id) : null;
+        if (class_instance_id && Number(class_instance_id) !== existingStudent.class_instance_id) studentData.graduated_at = null;
+      }
+
+      if (Object.keys(studentData).length > 0) {
+        await tx.student.update({ where: { user_id: numId }, data: studentData });
+      }
+      if (class_instance_id) {
+        const assignedClass = await tx.classInstance.findUnique({ where: { class_instance_id: Number(class_instance_id) }, select: { year_id: true } });
+        await tx.studentEnrollment.upsert({
+          where: { student_id_year_id: { student_id: existingStudent.student_id, year_id: assignedClass.year_id } },
+          create: { student_id: existingStudent.student_id, year_id: assignedClass.year_id, class_instance_id: Number(class_instance_id) },
+          update: { class_instance_id: Number(class_instance_id) },
+        });
+      }
+    }
+
+    // ── 4. Nếu là phụ huynh, update các liên kết con em ────────────────────
+    const existingParent = await tx.parent.findUnique({ where: { user_id: numId } });
+    if (existingParent && student_ids !== undefined) {
+      await tx.studentParent.deleteMany({ where: { parent_id: existingParent.parent_id } });
+      if (Array.isArray(student_ids) && student_ids.length > 0) {
+        const uniqueStudentIds = Array.from(new Set(student_ids.map(Number)));
+        const studentParents = uniqueStudentIds.map((sid) => ({
+          parent_id: existingParent.parent_id,
+          student_id: sid,
+        }));
+        await tx.studentParent.createMany({ data: studentParents });
+      }
+    }
+
+    return updatedUser;
   });
-
-  // ── 3. Nếu là học sinh, update bảng students ─────────────────────────────
-  const existingStudent = await prisma.student.findUnique({ where: { user_id: numId } });
-  if (existingStudent) {
-    const studentData = {};
-    if (date_of_birth !== undefined) studentData.date_of_birth = date_of_birth ? new Date(date_of_birth) : null;
-    if (gender !== undefined) studentData.gender = gender || null;
-    if (hometown !== undefined) studentData.hometown = hometown || null;
-    if (class_instance_id !== undefined) studentData.class_instance_id = class_instance_id ? Number(class_instance_id) : null;
-
-    if (Object.keys(studentData).length > 0) {
-      await prisma.student.update({ where: { user_id: numId }, data: studentData });
-    }
-  }
-
-  // ── 4. Nếu là phụ huynh, update các liên kết con em ──────────────────────
-  const existingParent = await prisma.parent.findUnique({ where: { user_id: numId } });
-  if (existingParent && student_ids !== undefined) {
-    // Delete old links
-    await prisma.studentParent.deleteMany({ where: { parent_id: existingParent.parent_id } });
-    // Insert new links
-    if (Array.isArray(student_ids) && student_ids.length > 0) {
-      const uniqueStudentIds = Array.from(new Set(student_ids.map(Number)));
-      const studentParents = uniqueStudentIds.map(sid => ({
-        parent_id: existingParent.parent_id,
-        student_id: sid
-      }));
-      await prisma.studentParent.createMany({ data: studentParents });
-    }
-  }
-
-  return updatedUser;
 };
 
 

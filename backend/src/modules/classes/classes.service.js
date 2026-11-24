@@ -1,4 +1,5 @@
 const prisma = require('../../config/prisma');
+const { assertClassAccess } = require('../../utils/access');
 
 const TEACHER_SELECT = {
   user_id: true, username: true, full_name: true, email: true, phone: true, status: true,
@@ -30,7 +31,7 @@ const getAllInstances = async (filters = {}) => {
       class: true,
       year: true,
       homeroom_teacher: { select: TEACHER_SELECT },
-      _count: { select: { students: true } },
+      _count: { select: { enrollments: true } },
     },
     orderBy: [{ year_id: 'desc' }, { grade: 'asc' }],
   });
@@ -122,15 +123,17 @@ const updateInstance = async (id, data) => {
   });
 };
 
-const getInstanceStudents = async (id) =>
-  prisma.student.findMany({
-    where: { class_instance_id: Number(id) },
+const getInstanceStudents = async (id, user) => {
+  await assertClassAccess(user, id);
+  return prisma.student.findMany({
+    where: { enrollments: { some: { class_instance_id: Number(id) } } },
     select: {
       student_id: true,
       student_code: true,
       date_of_birth: true,
       gender: true,
       hometown: true,
+      graduated_at: true,
       user: {
         select: {
           user_id: true,
@@ -143,12 +146,13 @@ const getInstanceStudents = async (id) =>
     },
     orderBy: { user: { full_name: 'asc' } },
   });
+};
 
 
 const getMyHomeroomClass = async (teacherId) =>
   prisma.classInstance.findFirst({
     where: { homeroom_teacher_id: Number(teacherId) },
-    include: { class: true, year: true, _count: { select: { students: true } } },
+    include: { class: true, year: true, _count: { select: { enrollments: true } } },
     orderBy: { year_id: 'desc' },
   });
 
@@ -160,7 +164,7 @@ const getMyClasses = async (teacherId) =>
         { teacher_assignments: { some: { teacher_id: Number(teacherId) } } },
       ],
     },
-    include: { class: true, year: true, _count: { select: { students: true } } },
+    include: { class: true, year: true, _count: { select: { enrollments: true } } },
     orderBy: [{ year_id: 'desc' }, { grade: 'asc' }],
   });
 
@@ -178,13 +182,14 @@ const getHomeroomClassDetail = async (classInstanceId, user) => {
   }
 
   const students = await prisma.student.findMany({
-    where: { class_instance_id: Number(classInstanceId) },
+    where: { enrollments: { some: { class_instance_id: Number(classInstanceId) } } },
     select: {
       student_id: true,
       student_code: true,
       date_of_birth: true,
       gender: true,
       hometown: true,
+      graduated_at: true,
       user: {
         select: {
           user_id: true, username: true, full_name: true, email: true, phone: true, status: true,

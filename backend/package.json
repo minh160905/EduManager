@@ -4,11 +4,17 @@
   "description": "Backend for THPT Student Management System",
   "main": "src/app.js",
   "scripts": {
-    "dev": "nodemon src/app.js",
-    "start": "node src/app.js",
+    "dev": "nodemon --exec \"node --use-system-ca\" src/app.js",
+    "start": "node --use-system-ca src/app.js",
+    "test": "node --test tests/access.test.js tests/exams.test.js tests/chatbot.test.js",
     "db:push": "prisma db push",
+    "db:create-exam-table": "node prisma/create_exam_schedule_table.js",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
+    "db:seed-multi-year": "node prisma/seed_multi_year_demo.js",
+    "db:create-enrollment-table": "node prisma/create_student_enrollment_table.js",
+    "db:promote-demo": "node prisma/promote_demo_cohorts.js",
+    "db:verify-multi-year": "node prisma/verify_multi_year_demo.js",
     "db:studio": "prisma studio"
   },
   "prisma": {

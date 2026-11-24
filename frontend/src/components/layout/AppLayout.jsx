@@ -1,269 +1,170 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Avatar, Dropdown, Space, Typography, Badge } from 'antd';
-import {
-  UserOutlined, TeamOutlined, BookOutlined, SolutionOutlined,
-  FileTextOutlined, TrophyOutlined, BellOutlined, LogoutOutlined,
-  BarChartOutlined, CommentOutlined, SendOutlined,
-  MenuFoldOutlined, MenuUnfoldOutlined, CalendarOutlined,
-  SettingOutlined, RightOutlined, HomeOutlined,
-} from '@ant-design/icons';
+import { Layout, Menu, Dropdown } from 'antd';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
+import { useThemeStore } from '../../store/theme.store';
 import { authApi, classesApi } from '../../api';
 import NotificationBell from '../common/NotificationBell';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const { Sider, Header, Content } = Layout;
-const { Text } = Typography;
 
-const BASE_TEACHER_MENUS = [
-  { key: '/teacher/scores',        icon: <BarChartOutlined />, label: 'Nhập điểm',        homeroomOnly: false },
-  { key: '/teacher/comments',      icon: <CommentOutlined />,  label: 'Nhận xét học sinh', homeroomOnly: false },
-  { key: '/teacher/notifications', icon: <SendOutlined />,     label: 'Gửi thông báo',    homeroomOnly: false },
-  { key: '/teacher/schedule',      icon: <CalendarOutlined />, label: 'Thời khoá biểu',   homeroomOnly: false },
-  { key: '/teacher/my-class',      icon: <HomeOutlined />,     label: 'Lớp chủ nhiệm',    homeroomOnly: true  },
-  { key: '/teacher/achievements',  icon: <TrophyOutlined />,   label: 'Duyệt thành tích', homeroomOnly: true  },
+const TEACHER_MENUS = [
+  { key: '/teacher/scores', label: 'Nhập điểm' },
+  { key: '/teacher/comments', label: 'Nhận xét học sinh' },
+  { key: '/teacher/notifications', label: 'Gửi thông báo' },
+  { key: '/teacher/schedule', label: 'Thời khóa biểu' },
+  { key: '/teacher/my-class', label: 'Lớp chủ nhiệm', homeroomOnly: true },
+  { key: '/teacher/achievements', label: 'Duyệt thành tích', homeroomOnly: true },
 ];
 
-// Order: homeroom items first if available, then the rest
-const buildTeacherMenu = (isHomeroom) => {
-  const homeroom = BASE_TEACHER_MENUS.filter(m => m.homeroomOnly);
-  const common   = BASE_TEACHER_MENUS.filter(m => !m.homeroomOnly);
-  return isHomeroom ? [...homeroom, ...common] : common;
-};
+const buildTeacherMenu = (isHomeroom) => [
+  ...(isHomeroom ? TEACHER_MENUS.filter((item) => item.homeroomOnly) : []),
+  ...TEACHER_MENUS.filter((item) => !item.homeroomOnly),
+];
 
 const MENUS = {
   ADMIN: [
-    { key: '/admin/users',       icon: <TeamOutlined />,      label: 'Quản lý người dùng' },
-    { key: '/admin/classes',     icon: <BookOutlined />,      label: 'Quản lý lớp học' },
-    { key: '/admin/subjects',    icon: <FileTextOutlined />,  label: 'Quản lý môn học' },
-    { key: '/admin/schedule',    icon: <CalendarOutlined />,  label: 'Thời khoá biểu' },
+    { key: '/admin/users', label: 'Người dùng' },
+    { key: '/admin/classes', label: 'Lớp học' },
+    { key: '/admin/subjects', label: 'Môn học' },
+    { key: '/admin/schedule', label: 'Thời khóa biểu' },
   ],
   PRINCIPAL: [
-    { key: '/admin/classes',     icon: <BookOutlined />,      label: 'Quản lý lớp học' },
-    { key: '/principal/departments', icon: <SolutionOutlined />, label: 'Tổ chuyên môn' },
-    { key: '/admin/assignments', icon: <FileTextOutlined />,  label: 'Danh sách phân công' },
+    { key: '/admin/classes', label: 'Lớp học' },
+    { key: '/principal/departments', label: 'Tổ chuyên môn' },
+    { key: '/admin/assignments', label: 'Phân công giảng dạy' },
   ],
   STUDENT: [
-    { key: '/student/report',       icon: <BarChartOutlined />, label: 'Bảng điểm' },
-    { key: '/student/achievements', icon: <TrophyOutlined />,   label: 'Thành tích' },
-    { key: '/student/schedule',     icon: <CalendarOutlined />, label: 'Thời khoá biểu' },
-    { key: '/student/comments',     icon: <CommentOutlined />,  label: 'Nhận xét' },
+    { key: '/student/report', label: 'Bảng điểm' },
+    { key: '/student/achievements', label: 'Thành tích' },
+    { key: '/student/schedule', label: 'Thời khóa biểu' },
+    { key: '/student/comments', label: 'Nhận xét' },
   ],
   PARENT: [
-    { key: '/parent/report',       icon: <BarChartOutlined />, label: 'Xem điểm con' },
-    { key: '/parent/achievements', icon: <TrophyOutlined />,   label: 'Thành tích con' },
-    { key: '/parent/schedule',     icon: <CalendarOutlined />, label: 'Thời khoá biểu' },
-    { key: '/parent/comments',     icon: <CommentOutlined />,  label: 'Nhận xét con' },
+    { key: '/parent/report', label: 'Bảng điểm của con' },
+    { key: '/parent/achievements', label: 'Thành tích của con' },
+    { key: '/parent/schedule', label: 'Thời khóa biểu' },
+    { key: '/parent/comments', label: 'Nhận xét của con' },
   ],
 };
 
-const ROLE_CONFIG = {
-  ADMIN:              { label: 'Quản trị viên', color: '#7C3AED', bg: '#F5F3FF', dot: '#7C3AED' },
-  TEACHER:            { label: 'Giáo viên',     color: '#4F46E5', bg: '#EEF2FF', dot: '#4F46E5' },
-  STUDENT:            { label: 'Học sinh',      color: '#059669', bg: '#ECFDF5', dot: '#059669' },
-  PARENT:             { label: 'Phụ huynh',     color: '#2563EB', bg: '#EFF6FF', dot: '#2563EB' },
-  PRINCIPAL:          { label: 'Hiệu trưởng',   color: '#B91C1C', bg: '#FEF2F2', dot: '#B91C1C' },
-  HEAD_OF_DEPARTMENT: { label: 'Tổ trưởng chuyên môn', color: '#0F766E', bg: '#F0FDFA', dot: '#0F766E' },
+const ROLE_LABELS = {
+  ADMIN: 'Quản trị viên',
+  TEACHER: 'Giáo viên',
+  STUDENT: 'Học sinh',
+  PARENT: 'Phụ huynh',
+  PRINCIPAL: 'Hiệu trưởng',
+  HEAD_OF_DEPARTMENT: 'Tổ trưởng chuyên môn',
 };
 
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuthStore();
+  const mode = useThemeStore((state) => state.mode);
+  const toggleTheme = useThemeStore((state) => state.toggle);
   const navigate = useNavigate();
   const location = useLocation();
-  const role = user?.role;
-  const roleCfg = ROLE_CONFIG[role] || ROLE_CONFIG.STUDENT;
   const qc = useQueryClient();
+  const role = user?.role;
 
-  // Fetch homeroom class (only for teachers and department heads)
-  // isSuccess distinguishes "still loading" (undefined) from "loaded but no class" (null)
   const { data: homeroomClass, isSuccess: homeroomLoaded } = useQuery({
     queryKey: ['my-homeroom-class'],
-    queryFn: () => classesApi.getMyHomeroomClass().then(r => r.data.data),
+    queryFn: () => classesApi.getMyHomeroomClass().then((response) => response.data.data),
     enabled: role === 'TEACHER' || role === 'HEAD_OF_DEPARTMENT' || role === 'PRINCIPAL',
     retry: false,
-    staleTime: 5 * 60 * 1000, // cache 5 min
+    staleTime: 5 * 60 * 1000,
   });
 
-  let menuItems = [];
-  if (role === 'TEACHER') {
-    menuItems = buildTeacherMenu(!homeroomLoaded || !!homeroomClass);
-  } else if (role === 'HEAD_OF_DEPARTMENT') {
-    const teacherMenu = buildTeacherMenu(!homeroomLoaded || !!homeroomClass);
-    menuItems = [
-      ...teacherMenu,
-      { key: '/admin/assignments', icon: <SolutionOutlined />, label: 'Phân công giảng dạy' },
-    ];
-  } else if (role === 'PRINCIPAL') {
-    // Principal gets teacher functions (including homeroom items dynamically if assigned) + management menus
-    const teacherMenu = buildTeacherMenu(!homeroomLoaded || !!homeroomClass);
-    menuItems = [
-      ...MENUS.PRINCIPAL,
-      ...teacherMenu,
-    ];
-  } else {
-    menuItems = MENUS[role] || [];
-  }
+  let menuItems;
+  const teacherMenu = buildTeacherMenu(!homeroomLoaded || !!homeroomClass);
+  if (role === 'TEACHER') menuItems = teacherMenu;
+  else if (role === 'HEAD_OF_DEPARTMENT') {
+    menuItems = [...teacherMenu, { key: '/admin/assignments', label: 'Phân công giảng dạy' }];
+  } else if (role === 'PRINCIPAL') menuItems = [...MENUS.PRINCIPAL, ...teacherMenu];
+  else menuItems = MENUS[role] || [];
+
+  menuItems = [
+    ...menuItems,
+    { key: '/chatbot', label: 'Trợ lý tra cứu' },
+    ...(role !== 'ADMIN' ? [{ key: '/notifications', label: 'Thông báo' }] : []),
+  ];
 
   const handleLogout = async () => {
-    try { await authApi.logout(); } catch {}
+    try { await authApi.logout(); } catch { /* Clear the local session even if the server is unavailable. */ }
     qc.clear();
     logout();
     navigate('/login');
   };
 
   const userMenu = [
-    ...(role !== 'ADMIN' ? [{
-      key: 'notifications', icon: <BellOutlined />,
-      label: 'Thông báo',
-      onClick: () => navigate('/notifications'),
-    }] : []),
-    { type: 'divider' },
-    { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true, onClick: handleLogout },
+    { key: 'logout', label: 'Đăng xuất', danger: true, onClick: handleLogout },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <Sider
-        collapsible collapsed={collapsed} onCollapse={setCollapsed}
-        width={240} trigger={null}
-        style={{
-          background: '#fff',
-          borderRight: '1px solid #E5E7EB',
-          position: 'fixed', height: '100vh', left: 0, top: 0, zIndex: 100,
-          boxShadow: '1px 0 6px rgba(0,0,0,0.05)',
-        }}
-      >
-        {/* Logo */}
-        <div style={{
-          padding: '18px 16px',
-          borderBottom: '1px solid #F3F4F6',
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-        }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: 'rgba(255,255,255,0.25)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, flexShrink: 0,
-          }}>🎓</div>
-          {!collapsed && (
-            <div>
-              <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>EduManager</div>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>THPT System</div>
-            </div>
-          )}
-        </div>
-
-        {/* Role badge */}
-        {!collapsed && (
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6' }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: roleCfg.bg, borderRadius: 20, padding: '4px 12px',
-              border: `1px solid ${roleCfg.color}30`,
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: roleCfg.dot }} />
-              <span style={{ color: roleCfg.color, fontSize: 12, fontWeight: 700 }}>{roleCfg.label}</span>
-            </div>
+    <Layout className="app-shell">
+      {mobileMenuOpen && (
+        <button
+          className="sidebar-backdrop"
+          type="button"
+          aria-label="Đóng menu"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+      <Sider width={240} trigger={null} className={`app-sidebar${mobileMenuOpen ? ' is-open' : ''}`}>
+        <div className="sidebar-brand">
+          <span className="brand-mark" aria-hidden="true">E</span>
+          <div>
+            <strong>EduManager</strong>
+            <small>Quản lý trường học</small>
           </div>
-        )}
-
-        {/* Menu */}
-        <div style={{ padding: '8px 0', flex: 1 }}>
+        </div>
+        <div className="sidebar-role">{ROLE_LABELS[role] || 'Tài khoản'}</div>
+        <nav className="sidebar-navigation" aria-label="Điều hướng chính">
           <Menu
             mode="inline"
             selectedKeys={[location.pathname]}
             items={menuItems}
-            onClick={({ key }) => navigate(key)}
-            style={{ background: 'transparent', border: 'none' }}
+            onClick={({ key }) => { setMobileMenuOpen(false); navigate(key); }}
           />
-        </div>
-
-        {/* Notifications (non-admin) */}
-        {role !== 'ADMIN' && (
-          <div style={{ borderTop: '1px solid #F3F4F6', padding: '8px 0' }}>
-            <Menu
-              mode="inline"
-              selectedKeys={[location.pathname]}
-              items={[{ key: '/notifications', icon: <BellOutlined />, label: 'Thông báo' }]}
-              onClick={() => navigate('/notifications')}
-              style={{ background: 'transparent', border: 'none' }}
-            />
-          </div>
-        )}
+        </nav>
       </Sider>
 
-      {/* ── Main content ────────────────────────────────────────────────── */}
-      <Layout style={{
-        marginLeft: collapsed ? 80 : 240, transition: 'margin 0.2s',
-        background: '#F8FAFF',
-      }}>
-        {/* Header */}
-        <Header style={{
-          position: 'sticky', top: 0, zIndex: 99,
-          padding: '0 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(255,255,255,0.92)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid #E5E7EB',
-          height: 60,
-          boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-        }}>
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 18, color: '#6B7280',
-              display: 'flex', alignItems: 'center', padding: 8, borderRadius: 8,
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#F3F4F6'}
-            onMouseLeave={e => e.currentTarget.style.background = 'none'}
-          >
-            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          </button>
-
-          <Space size={12} align="center">
-            {role !== 'ADMIN' && <NotificationBell />}
-
-            <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                cursor: 'pointer', padding: '6px 12px', borderRadius: 10,
-                border: '1px solid #E5E7EB', background: '#fff',
-                transition: 'all 0.15s',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-              }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#4F46E5'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}
-              >
-                <Avatar
-                  size={32}
-                  style={{
-                    background: `linear-gradient(135deg, ${roleCfg.color}, ${roleCfg.dot}99)`,
-                    fontWeight: 700, fontSize: 13,
-                  }}
-                >
-                  {(user?.fullName || user?.username || '?')[0].toUpperCase()}
-                </Avatar>
-                <div style={{ lineHeight: 1.3 }}>
-                  <div style={{ color: '#111827', fontWeight: 700, fontSize: 13 }}>
-                    {user?.fullName || user?.username}
-                  </div>
-                  <div style={{ color: roleCfg.color, fontSize: 11, fontWeight: 600 }}>{roleCfg.label}</div>
-                </div>
-              </div>
-            </Dropdown>
-          </Space>
-        </Header>
-
-        <Content style={{ padding: '24px', minHeight: 'calc(100vh - 60px)' }}>
-          <div className="fade-in">
-            <Outlet />
+      <Layout className="app-main">
+        <Header className="app-header">
+          <div className="header-start">
+            <button
+              className="header-text-button mobile-menu-button"
+              type="button"
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              {mobileMenuOpen ? 'Đóng menu' : 'Menu'}
+            </button>
+            <span className="header-page-title">
+              {menuItems.find((item) => item.key === location.pathname)?.label || 'EduManager'}
+            </span>
           </div>
+          <div className="header-actions">
+            <button className="header-text-button" type="button" onClick={toggleTheme}>
+              {mode === 'light' ? 'Chế độ tối' : 'Chế độ sáng'}
+            </button>
+            {role !== 'ADMIN' && <NotificationBell />}
+            <Dropdown menu={{ items: userMenu }} placement="bottomRight" trigger={['click']}>
+              <button className="header-account" type="button" aria-label="Tài khoản và đăng xuất">
+                <span className="account-initial" aria-hidden="true">
+                  {(user?.fullName || user?.username || '?')[0].toUpperCase()}
+                </span>
+                <span className="account-copy">
+                  <strong>{user?.fullName || user?.username}</strong>
+                  <small>{ROLE_LABELS[role] || 'Tài khoản'}</small>
+                </span>
+              </button>
+            </Dropdown>
+          </div>
+        </Header>
+        <Content className="app-content">
+          <div className="fade-in"><Outlet /></div>
         </Content>
       </Layout>
     </Layout>

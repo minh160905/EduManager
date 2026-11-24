@@ -11,20 +11,20 @@ import {
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { classesApi, studentApi, achievementsApi, commentsApi, conductsApi } from '../../api';
+import { useAuthStore } from '../../store/auth.store';
 import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
 // ── Small info row ──────────────────────────────────────────────────────────
-const InfoRow = ({ icon, label, value }) => (
+const InfoRow = ({ label, value }) => (
   <div style={{
     display: 'flex', alignItems: 'flex-start', gap: 10,
-    padding: '8px 0', borderBottom: '1px solid #F3F4F6',
+    padding: '8px 0', borderBottom: '1px solid var(--border-soft)',
   }}>
-    <span style={{ color: '#4F46E5', width: 16, flexShrink: 0, marginTop: 2 }}>{icon}</span>
     <div style={{ flex: 1 }}>
-      <div style={{ color: '#9CA3AF', fontSize: 11, marginBottom: 1 }}>{label}</div>
-      <div style={{ color: '#111827', fontWeight: 500, fontSize: 13 }}>{value || '—'}</div>
+      <div style={{ color: 'var(--text-muted)', fontSize: 11, marginBottom: 1 }}>{label}</div>
+      <div style={{ color: 'var(--text-primary)', fontWeight: 500, fontSize: 13 }}>{value || '—'}</div>
     </div>
   </div>
 );
@@ -35,31 +35,31 @@ const ParentCard = ({ parent }) => {
   if (!u) return null;
   return (
     <div style={{
-      background: '#F8FAFF', border: '1px solid #E0E7FF',
+      background: 'var(--bg-page)', border: '1px solid var(--primary-soft)',
       borderRadius: 10, padding: '12px 14px', marginBottom: 10,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <div style={{
           width: 34, height: 34, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #2563EB, #4F46E5)',
+          background: 'linear-gradient(135deg, var(--info), var(--primary))',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0,
         }}>
           {u.full_name?.[0]}
         </div>
         <div>
-          <div style={{ color: '#111827', fontWeight: 700, fontSize: 14 }}>{u.full_name}</div>
-          <div style={{ color: '#6B7280', fontSize: 12 }}>@{u.username}</div>
+          <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 14 }}>{u.full_name}</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{u.username}</div>
         </div>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         {u.email && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#4F46E5', fontSize: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontSize: 12 }}>
             <MailOutlined /> {u.email}
           </span>
         )}
         {u.phone && (
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#059669', fontSize: 12 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--success)', fontSize: 12 }}>
             <PhoneOutlined /> {u.phone}
           </span>
         )}
@@ -91,18 +91,18 @@ function StudentScoresTab({ studentId, yearId: initialYearId }) {
   });
 
   if (isLoading) return <div style={{ textAlign: 'center', padding: 20 }}><Spin /></div>;
-  if (error || !report) return <div style={{ color: '#EF4444', padding: 10, textAlign: 'center' }}>Không thể tải bảng điểm</div>;
+  if (error || !report) return <div style={{ color: 'var(--danger)', padding: 10, textAlign: 'center' }}>Không thể tải bảng điểm</div>;
 
   const ScoreCell = ({ value }) => {
-    if (value === null || value === undefined) return <span style={{ color: '#9CA3AF' }}>—</span>;
-    let color = '#111827';
-    if (value >= 8) color = '#10B981';
-    else if (value < 5) color = '#EF4444';
+    if (value === null || value === undefined) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+    let color = 'var(--text-primary)';
+    if (value >= 8) color = 'var(--success)';
+    else if (value < 5) color = 'var(--danger)';
     return <span style={{ color, fontWeight: value >= 8 || value < 5 ? 700 : 400 }}>{value.toFixed(1)}</span>;
   };
 
   const columns = [
-    { title: 'Môn học', dataIndex: 'subject_name', render: v => <Text strong style={{ color: '#111827' }}>{v}</Text> },
+    { title: 'Môn học', dataIndex: 'subject_name', render: v => <Text strong style={{ color: 'var(--text-primary)' }}>{v}</Text> },
     ...[1, 2, 3, 4, 5].map(i => ({
       title: `TX${i}`,
       dataIndex: `tx${i}`, width: 60, align: 'center',
@@ -114,8 +114,8 @@ function StudentScoresTab({ studentId, yearId: initialYearId }) {
       title: <span style={{ fontWeight: 800 }}>ĐTB</span>,
       dataIndex: 'dtb', width: 70, align: 'center',
       render: v => v != null
-        ? <strong style={{ color: v >= 8 ? '#10B981' : v < 5 ? '#EF4444' : '#F59E0B', fontSize: 13 }}>{v.toFixed(2)}</strong>
-        : <span style={{ color: '#9CA3AF' }}>—</span>,
+        ? <strong style={{ color: v >= 8 ? 'var(--success)' : v < 5 ? 'var(--danger)' : 'var(--warning)', fontSize: 13 }}>{v.toFixed(2)}</strong>
+        : <span style={{ color: 'var(--text-muted)' }}>—</span>,
     },
   ];
 
@@ -138,10 +138,10 @@ function StudentScoresTab({ studentId, yearId: initialYearId }) {
           />
         </div>
         {report.overall_avg !== null && (
-          <div style={{ background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 8, padding: '4px 12px' }}>
-            <span style={{ color: '#6B7280', fontSize: 11, marginRight: 6 }}>ĐTB Tổng kết:</span>
+          <div style={{ background: 'var(--primary-soft)', border: '1px solid var(--primary-border)', borderRadius: 8, padding: '4px 12px' }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 11, marginRight: 6 }}>ĐTB Tổng kết:</span>
             <strong style={{
-              color: report.overall_avg >= 8 ? '#10B981' : report.overall_avg < 5 ? '#EF4444' : '#F59E0B',
+              color: report.overall_avg >= 8 ? 'var(--success)' : report.overall_avg < 5 ? 'var(--danger)' : 'var(--warning)',
               fontSize: 15
             }}>
               {report.overall_avg.toFixed(2)}
@@ -196,31 +196,31 @@ function StudentAchievementsTab({ studentId }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 500, overflowY: 'auto', paddingRight: 4 }}>
           {achievements.map((ach) => (
             <div key={ach.achievement_id} style={{
-              background: '#fff', border: '1px solid #E5E7EB',
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
               borderRadius: 10, padding: 14, boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                <Text strong style={{ color: '#111827', fontSize: 14 }}>{ach.title}</Text>
+                <Text strong style={{ color: 'var(--text-primary)', fontSize: 14 }}>{ach.title}</Text>
                 {getStatusTag(ach.status)}
               </div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 {ach.category && <Tag color="blue" style={{ borderRadius: 6, margin: 0 }}>{ach.category}</Tag>}
-                <Text style={{ color: '#9CA3AF', fontSize: 11 }}>
+                <Text style={{ color: 'var(--text-muted)', fontSize: 11 }}>
                   Nộp ngày: {dayjs(ach.submitted_at).format('DD/MM/YYYY')}
                 </Text>
               </div>
               {ach.description && (
-                <div style={{ color: '#4B5563', fontSize: 13, marginBottom: 8, background: '#F9FAFB', padding: '6px 10px', borderRadius: 6 }}>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 8, background: 'var(--bg-card-hover)', padding: '6px 10px', borderRadius: 6 }}>
                   {ach.description}
                 </div>
               )}
               {ach.files && ach.files.length > 0 && (
                 <div style={{ marginTop: 6 }}>
-                  <Text style={{ color: '#6B7280', fontSize: 11, display: 'block', marginBottom: 4 }}>Minh chứng đính kèm:</Text>
+                  <Text style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block', marginBottom: 4 }}>Minh chứng đính kèm:</Text>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {ach.files.map((f, fi) => (
                       <a key={fi} href={f.file_url} target="_blank" rel="noopener noreferrer" style={{
-                        fontSize: 12, color: '#4F46E5', textDecoration: 'underline'
+                        fontSize: 12, color: 'var(--primary)', textDecoration: 'underline'
                       }}>
                         Tài liệu {fi + 1}
                       </a>
@@ -229,7 +229,7 @@ function StudentAchievementsTab({ studentId }) {
                 </div>
               )}
               {ach.status !== 'PENDING' && ach.reviewer && (
-                <div style={{ marginTop: 8, borderTop: '1px solid #F3F4F6', paddingTop: 6, fontSize: 11, color: '#9CA3AF' }}>
+                <div style={{ marginTop: 8, borderTop: '1px solid var(--border-soft)', paddingTop: 6, fontSize: 11, color: 'var(--text-muted)' }}>
                   Người duyệt: <strong>{ach.reviewer.full_name}</strong> {ach.reviewed_at && `vào ${dayjs(ach.reviewed_at).format('DD/MM/YYYY HH:mm')}`}
                 </div>
               )}
@@ -242,10 +242,10 @@ function StudentAchievementsTab({ studentId }) {
 }
 
 const CONDUCT_OPTIONS = [
-  { value: 'EXCELLENT', label: 'Tốt',        color: '#10B981', bg: '#ECFDF5', border: '#6EE7B7' },
-  { value: 'GOOD',      label: 'Khá',        color: '#2563EB', bg: '#EFF6FF', border: '#93C5FD' },
-  { value: 'AVERAGE',   label: 'Trung bình', color: '#D97706', bg: '#FFFBEB', border: '#FCD34D' },
-  { value: 'WEAK',      label: 'Yếu',        color: '#EF4444', bg: '#FEF2F2', border: '#FCA5A5' },
+  { value: 'EXCELLENT', label: 'Tốt',        color: 'var(--success)', bg: 'var(--success-soft)', border: '#6EE7B7' },
+  { value: 'GOOD',      label: 'Khá',        color: 'var(--info)', bg: 'var(--info-soft)', border: '#93C5FD' },
+  { value: 'AVERAGE',   label: 'Trung bình', color: 'var(--warning)', bg: 'var(--warning-soft)', border: '#FCD34D' },
+  { value: 'WEAK',      label: 'Yếu',        color: 'var(--danger)', bg: 'var(--danger-soft)', border: '#FCA5A5' },
 ];
 
 // ── Tab 3: Comments ──────────────────────────────────────────────────────────
@@ -303,25 +303,25 @@ function StudentCommentsTab({ studentId, yearId: initialYearId }) {
         </div>
         {/* Banner hiển thị Hạnh kiểm */}
         <div style={{
-          background: activeConduct ? activeConductConfig?.bg || '#EEF2FF' : '#F3F4F6',
-          border: `1px solid ${activeConduct ? activeConductConfig?.border || '#C7D2FE' : '#E5E7EB'}`,
+          background: activeConduct ? activeConductConfig?.bg || 'var(--primary-soft)' : 'var(--border-soft)',
+          border: `1px solid ${activeConduct ? activeConductConfig?.border || 'var(--primary-border)' : 'var(--border)'}`,
           borderRadius: 8,
           padding: '4px 12px',
           display: 'flex',
           alignItems: 'center',
           gap: 6
         }}>
-          <span style={{ color: '#6B7280', fontSize: 11 }}>Hạnh kiểm:</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Hạnh kiểm:</span>
           {activeConduct ? (
             <strong style={{
-              color: activeConductConfig?.color || '#4F46E5',
+              color: activeConductConfig?.color || 'var(--primary)',
               fontSize: 14,
               fontWeight: 800
             }}>
               {activeConductConfig?.label}
             </strong>
           ) : (
-            <strong style={{ color: '#9CA3AF', fontSize: 14 }}>-</strong>
+            <strong style={{ color: 'var(--text-muted)', fontSize: 14 }}>-</strong>
           )}
         </div>
       </div>
@@ -332,14 +332,14 @@ function StudentCommentsTab({ studentId, yearId: initialYearId }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 500, overflowY: 'auto', paddingRight: 4 }}>
           {comments.map((c) => (
             <div key={c.comment_id} style={{
-              background: '#F8FAFF', borderRadius: 10, padding: '10px 14px',
-              border: '1px solid #E5E7EB',
+              background: 'var(--bg-page)', borderRadius: 10, padding: '10px 14px',
+              border: '1px solid var(--border)',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text strong style={{ color: '#4F46E5', fontSize: 12 }}>{c.teacher?.full_name}</Text>
-                <Text style={{ color: '#9CA3AF', fontSize: 11 }}>{dayjs(c.created_at).format('DD/MM/YYYY HH:mm')}</Text>
+                <Text strong style={{ color: 'var(--primary)', fontSize: 12 }}>{c.teacher?.full_name}</Text>
+                <Text style={{ color: 'var(--text-muted)', fontSize: 11 }}>{dayjs(c.created_at).format('DD/MM/YYYY HH:mm')}</Text>
               </div>
-              <Text style={{ color: '#111827', fontSize: 13 }}>{c.content}</Text>
+              <Text style={{ color: 'var(--text-primary)', fontSize: 13 }}>{c.content}</Text>
             </div>
           ))}
         </div>
@@ -351,12 +351,15 @@ function StudentCommentsTab({ studentId, yearId: initialYearId }) {
 export default function TeacherClassPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedClassId, setSelectedClassId] = useState(null);
+  const currentUser = useAuthStore(state => state.user);
 
-  // ── Fetch the single homeroom class of this teacher ─────────────────────
-  const { data: homeroomClass, isLoading: classLoading } = useQuery({
-    queryKey: ['my-homeroom-class'],
-    queryFn: () => classesApi.getMyHomeroomClass().then(r => r.data.data),
+  const { data: assignedClasses = [], isLoading: classLoading } = useQuery({
+    queryKey: ['my-classes'],
+    queryFn: () => classesApi.getMyClasses().then(r => r.data.data),
   });
+  const homeroomClasses = assignedClasses.filter(item => item.homeroom_teacher_id === currentUser?.userId);
+  const homeroomClass = homeroomClasses.find(item => item.class_instance_id === selectedClassId) || homeroomClasses[0];
 
   // ── Fetch students + parents once we have the class id ──────────────────
   const { data: classDetail, isLoading: detailLoading } = useQuery({
@@ -378,7 +381,7 @@ export default function TeacherClassPage() {
   const columns = [
     {
       title: '#', width: 50,
-      render: (_, __, i) => <Text style={{ color: '#9CA3AF', fontSize: 12 }}>{i + 1}</Text>,
+      render: (_, __, i) => <Text style={{ color: 'var(--text-muted)', fontSize: 12 }}>{i + 1}</Text>,
     },
     {
       title: 'Học sinh',
@@ -389,15 +392,15 @@ export default function TeacherClassPage() {
             style={{
               background: r.gender === 'Nữ'
                 ? 'linear-gradient(135deg, #EC4899, #F472B6)'
-                : 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                : 'linear-gradient(135deg, var(--primary), var(--accent))',
               fontWeight: 700, fontSize: 14, flexShrink: 0,
             }}
           >
             {r.user?.full_name?.[0] || '?'}
           </Avatar>
           <div>
-            <div style={{ color: '#111827', fontWeight: 700, fontSize: 14 }}>{r.user?.full_name}</div>
-            <div style={{ color: '#6B7280', fontSize: 12 }}>@{r.user?.username}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 14 }}>{r.user?.full_name} {r.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{r.user?.username}</div>
           </div>
         </Space>
       ),
@@ -414,25 +417,25 @@ export default function TeacherClassPage() {
           icon={v === 'Nữ' ? <WomanOutlined /> : <ManOutlined />}
           style={{ borderRadius: 6 }}
         >{v}</Tag>
-      ) : <Text style={{ color: '#D1D5DB' }}>—</Text>,
+      ) : <Text style={{ color: 'var(--border)' }}>—</Text>,
     },
     {
       title: 'Ngày sinh', dataIndex: 'date_of_birth', width: 120,
-      render: v => <Text style={{ color: '#374151', fontSize: 13 }}>{v ? dayjs(v).format('DD/MM/YYYY') : '—'}</Text>,
+      render: v => <Text style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{v ? dayjs(v).format('DD/MM/YYYY') : '—'}</Text>,
     },
     {
       title: 'Email', dataIndex: ['user', 'email'],
-      render: v => <Text style={{ color: '#6B7280', fontSize: 12 }}>{v || '—'}</Text>,
+      render: v => <Text style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{v || '—'}</Text>,
     },
     {
       title: 'Phụ huynh', width: 100,
       render: (_, r) => {
         const count = r.parents?.length || 0;
         return count > 0
-          ? <Badge count={count} color="#4F46E5" style={{ fontWeight: 600 }}>
+          ? <Badge count={count} color="var(--primary)" style={{ fontWeight: 600 }}>
               <Tag icon={<TeamOutlined />} color="geekblue" style={{ borderRadius: 6, margin: 0 }}>PH</Tag>
             </Badge>
-          : <Text style={{ color: '#D1D5DB' }}>—</Text>;
+          : <Text style={{ color: 'var(--border)' }}>—</Text>;
       },
     },
     {
@@ -441,12 +444,12 @@ export default function TeacherClassPage() {
         <button
           onClick={() => { setSelectedStudent(r); setDrawerOpen(true); }}
           style={{
-            background: '#EEF2FF', border: '1px solid #C7D2FE', color: '#4F46E5',
+            background: 'var(--primary-soft)', border: '1px solid var(--primary-border)', color: 'var(--primary)',
             borderRadius: 8, padding: '5px 14px', cursor: 'pointer',
             fontWeight: 600, fontSize: 13, transition: 'all 0.2s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#4F46E5'; e.currentTarget.style.color = '#fff'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#EEF2FF'; e.currentTarget.style.color = '#4F46E5'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary-soft)'; e.currentTarget.style.color = 'var(--primary)'; }}
         >
           Chi tiết
         </button>
@@ -458,9 +461,17 @@ export default function TeacherClassPage() {
     <div>
       {/* ── Page header ── */}
       <div className="page-header">
-        <h1>🏫 Lớp chủ nhiệm</h1>
+        <h1>Lớp chủ nhiệm</h1>
         <p>Xem danh sách học sinh và thông tin chi tiết của lớp bạn chủ nhiệm</p>
       </div>
+
+      {homeroomClasses.length > 0 && <Select
+        aria-label="Chọn lớp và năm học"
+        value={homeroomClass?.class_instance_id}
+        onChange={value => { setSelectedClassId(value); setSelectedStudent(null); setDrawerOpen(false); }}
+        style={{ width: 260, marginBottom: 16 }}
+        options={homeroomClasses.map(item => ({ value: item.class_instance_id, label: `${item.grade}${item.class?.class_code} – ${item.year?.name}` }))}
+      />}
 
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: 80 }}><Spin size="large" /></div>
@@ -468,7 +479,7 @@ export default function TeacherClassPage() {
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
-            <div style={{ color: '#6B7280', fontSize: 14 }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
               Bạn chưa được phân công làm giáo viên chủ nhiệm cho lớp nào
             </div>
           }
@@ -478,17 +489,11 @@ export default function TeacherClassPage() {
         <>
           {/* ── Class info banner ── */}
           <div style={{
-            background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+            background: 'var(--banner-bg)',
             borderRadius: 14, padding: '20px 24px', marginBottom: 20,
             display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap',
             boxShadow: '0 4px 20px rgba(79,70,229,0.25)',
           }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 16,
-              background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, flexShrink: 0,
-            }}>🏫</div>
             <div style={{ flex: 1 }}>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: 22, lineHeight: 1.2 }}>
                 {classLabel}
@@ -499,15 +504,15 @@ export default function TeacherClassPage() {
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               {[
-                { label: 'Học sinh', value: students.length, icon: '👥' },
-                { label: 'Nam', value: students.filter(s => s.gender === 'Nam').length, icon: '👦' },
-                { label: 'Nữ', value: students.filter(s => s.gender === 'Nữ').length, icon: '👧' },
+                { label: 'Học sinh', value: students.length },
+                { label: 'Nam', value: students.filter(s => s.gender === 'Nam').length },
+                { label: 'Nữ', value: students.filter(s => s.gender === 'Nữ').length },
               ].map((stat, i) => (
                 <div key={i} style={{
                   background: 'rgba(255,255,255,0.15)',
                   borderRadius: 12, padding: '10px 18px', textAlign: 'center',
                 }}>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>{stat.icon} {stat.label}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 2 }}>{stat.label}</div>
                   <div style={{ color: '#fff', fontWeight: 800, fontSize: 22 }}>{stat.value}</div>
                 </div>
               ))}
@@ -516,7 +521,7 @@ export default function TeacherClassPage() {
 
           {/* ── Student table ── */}
           <div style={{
-            background: '#fff', border: '1px solid #E5E7EB', borderRadius: 14,
+            background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14,
             boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden',
           }}>
             <div style={{ padding: '0 4px' }}>
@@ -544,24 +549,24 @@ export default function TeacherClassPage() {
                 width: 40, height: 40, borderRadius: '50%',
                 background: selectedStudent.gender === 'Nữ'
                   ? 'linear-gradient(135deg, #EC4899, #F472B6)'
-                  : 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                  : 'linear-gradient(135deg, var(--primary), var(--accent))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontWeight: 700, fontSize: 18, flexShrink: 0,
               }}>{selectedStudent.user?.full_name?.[0]}</div>
               <div>
-                <div style={{ color: '#111827', fontWeight: 700, fontSize: 15 }}>{selectedStudent.user?.full_name}</div>
-                <div style={{ color: '#6B7280', fontSize: 12 }}>@{selectedStudent.user?.username}</div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 15 }}>{selectedStudent.user?.full_name} {selectedStudent.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{selectedStudent.user?.username}</div>
               </div>
             </div>
           ) : 'Chi tiết học sinh'
         }
         styles={{
-          header: { background: '#fff', borderBottom: '1px solid #E5E7EB' },
-          body: { background: '#F8FAFF', padding: '20px' },
+          header: { background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' },
+          body: { background: 'var(--bg-page)', padding: '20px' },
         }}
       >
         {selectedStudent && (
-          <Tabs defaultActiveKey="info" type="card" style={{ background: '#fff', padding: 16, borderRadius: 12, border: '1px solid #E5E7EB' }}>
+          <Tabs defaultActiveKey="info" type="card" style={{ background: 'var(--bg-card)', padding: 16, borderRadius: 12, border: '1px solid var(--border)' }}>
             <Tabs.TabPane tab={<span><UserOutlined /> Thông tin</span>} key="info">
               {/* Status + gender badges */}
               <div style={{ marginBottom: 16 }}>
@@ -569,7 +574,7 @@ export default function TeacherClassPage() {
                   color={selectedStudent.user?.status === 'ACTIVE' ? 'success' : 'error'}
                   style={{ borderRadius: 20, fontWeight: 600, fontSize: 12 }}
                 >
-                  {selectedStudent.user?.status === 'ACTIVE' ? '● Hoạt động' : '● Đã khóa'}
+                  {selectedStudent.user?.status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
                 </Tag>
                 {selectedStudent.gender && (
                   <Tag
@@ -584,11 +589,11 @@ export default function TeacherClassPage() {
 
               {/* Personal info */}
               <div style={{
-                background: '#fff', border: '1px solid #F3F4F6',
+                background: 'var(--bg-card)', border: '1px solid var(--border-soft)',
                 borderRadius: 12, padding: '14px 16px', marginBottom: 16,
               }}>
-                <div style={{ color: '#4F46E5', fontWeight: 700, fontSize: 12, letterSpacing: 0.5, marginBottom: 10 }}>
-                  👤 THÔNG TIN CÁ NHÂN
+                <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 12, letterSpacing: 0.5, marginBottom: 10 }}>
+                   THÔNG TIN CÁ NHÂN
                 </div>
                 <InfoRow icon={<IdcardOutlined />} label="Mã học sinh" value={selectedStudent.student_code} />
                 <InfoRow icon={<UserOutlined />} label="Họ và tên" value={selectedStudent.user?.full_name} />
@@ -601,16 +606,16 @@ export default function TeacherClassPage() {
 
               {/* Parents */}
               <div style={{
-                background: '#fff', border: '1px solid #F3F4F6',
+                background: 'var(--bg-card)', border: '1px solid var(--border-soft)',
                 borderRadius: 12, padding: '14px 16px',
               }}>
                 <div style={{
-                  color: '#4F46E5', fontWeight: 700, fontSize: 12, letterSpacing: 0.5, marginBottom: 12,
+                  color: 'var(--primary)', fontWeight: 700, fontSize: 12, letterSpacing: 0.5, marginBottom: 12,
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                   <HomeOutlined /> THÔNG TIN PHỤ HUYNH
                   <span style={{
-                    background: '#EEF2FF', color: '#4F46E5',
+                    background: 'var(--primary-soft)', color: 'var(--primary)',
                     borderRadius: 20, padding: '1px 8px', fontSize: 11,
                   }}>
                     {selectedStudent.parents?.length || 0} người
@@ -622,7 +627,7 @@ export default function TeacherClassPage() {
                     <ParentCard key={i} parent={sp.parent} />
                   ))
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '20px 0', color: '#9CA3AF', fontSize: 13 }}>
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
                     <TeamOutlined style={{ fontSize: 24, marginBottom: 6, display: 'block' }} />
                     Chưa có thông tin phụ huynh
                   </div>

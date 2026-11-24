@@ -8,9 +8,9 @@ const { Text } = Typography;
 
 const getScoreStyle = (v) => {
   if (v === null || v === undefined) return {};
-  if (v >= 8) return { color: '#10B981', fontWeight: 700 };
-  if (v < 5) return { color: '#EF4444', fontWeight: 700 };
-  return { color: '#111827' };
+  if (v >= 8) return { color: 'var(--success)', fontWeight: 700 };
+  if (v < 5) return { color: 'var(--danger)', fontWeight: 700 };
+  return { color: 'var(--text-primary)' };
 };
 
 const ScoreInputCell = ({ value, onChange, disabled }) => (
@@ -26,8 +26,8 @@ const ScoreInputCell = ({ value, onChange, disabled }) => (
       border: '1px solid rgba(99,102,241,0.3)',
       borderRadius: 6,
       color: value !== null && value !== undefined
-        ? (value >= 8 ? '#10B981' : value < 5 ? '#EF4444' : '#111827')
-        : '#6B7280',
+        ? (value >= 8 ? 'var(--success)' : value < 5 ? 'var(--danger)' : 'var(--text-primary)')
+        : 'var(--text-secondary)',
     }}
     controls={false}
     placeholder="—"
@@ -38,10 +38,10 @@ const ScoreInputCell = ({ value, onChange, disabled }) => (
 const ScoreTypeBadge = ({ label }) => {
   const colorMap = {
     TX1: '#A78BFA', TX2: '#A78BFA', TX3: '#A78BFA', TX4: '#A78BFA', TX5: '#A78BFA',
-    GK: '#F59E0B',
+    GK: 'var(--warning)',
     CK: '#F87171',
   };
-  const c = colorMap[label] || '#6B7280';
+  const c = colorMap[label] || 'var(--text-secondary)';
   return (
     <span style={{
       display: 'inline-block', padding: '1px 8px', borderRadius: 4,
@@ -93,11 +93,12 @@ export default function ScoreEntryPage() {
 
   // Score history query — fires only when modal is open
   const { data: historyData = [], isLoading: historyLoading } = useQuery({
-    queryKey: ['score-history', historyModal.student?.student_id, subjectId, semester],
+    queryKey: ['score-history', historyModal.student?.student_id, subjectId, semester, selectedClass?.year_id],
     queryFn: () => scoresApi.getStudentHistory({
       studentId: historyModal.student.student_id,
       subjectId,
       semester,
+      yearId: selectedClass?.year_id,
     }).then(r => r.data.data),
     enabled: !!(historyModal.open && historyModal.student && subjectId && semester),
   });
@@ -125,7 +126,7 @@ export default function ScoreEntryPage() {
     onSuccess: () => {
       qc.invalidateQueries(['class-scores']);
       qc.invalidateQueries(['score-history']);
-      message.success('✅ Lưu điểm thành công!');
+      message.success(' Lưu điểm thành công!');
     },
     onError: (e) => message.error(e.response?.data?.message || 'Lỗi lưu điểm'),
   });
@@ -212,16 +213,16 @@ export default function ScoreEntryPage() {
   const columns = [
     {
       title: '#', width: 50, align: 'center',
-      render: (_, __, idx) => <Text style={{ color: '#6B7280' }}>{idx + 1}</Text>,
+      render: (_, __, idx) => <Text style={{ color: 'var(--text-secondary)' }}>{idx + 1}</Text>,
     },
     {
       title: 'Họ và tên', dataIndex: 'full_name', width: 200,
       render: (name, row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {savedRows.has(row.student_id) && <CheckCircleOutlined style={{ color: '#10B981' }} />}
+          {savedRows.has(row.student_id) && <CheckCircleOutlined style={{ color: 'var(--success)' }} />}
           <div>
-            <div style={{ color: '#111827', fontWeight: 600 }}>{name}</div>
-            <div style={{ color: '#6B7280', fontSize: 11 }}>{row.student_code}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{name} {row.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{row.student_code}</div>
           </div>
         </div>
       ),
@@ -241,7 +242,7 @@ export default function ScoreEntryPage() {
       },
     },
     {
-      title: <span style={{ color: '#F59E0B', fontWeight: 700 }}>GK</span>,
+      title: <span style={{ color: 'var(--warning)', fontWeight: 700 }}>GK</span>,
       dataIndex: 'gk', width: 80, align: 'center',
       render: (_, row) => (
         <ScoreInputCell
@@ -263,28 +264,27 @@ export default function ScoreEntryPage() {
       ),
     },
     {
-      title: <span style={{ color: '#10B981', fontWeight: 700 }}>ĐTB</span>,
+      title: <span style={{ color: 'var(--success)', fontWeight: 700 }}>ĐTB</span>,
       width: 80, align: 'center',
       render: (_, row) => {
         const dtb = calcDTB(row);
         return dtb !== null
           ? <Text strong style={getScoreStyle(dtb)}>{dtb}</Text>
-          : <Text style={{ color: '#6B7280' }}>—</Text>;
+          : <Text style={{ color: 'var(--text-secondary)' }}>—</Text>;
       },
     },
     {
-      title: <span style={{ color: '#94A3B8', fontWeight: 700 }}>Lịch sử</span>,
+      title: <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>Lịch sử</span>,
       width: 72, align: 'center',
       render: (_, row) => (
         <Tooltip title="Xem lịch sử chỉnh sửa điểm">
           <Button
             type="text"
-            icon={<HistoryOutlined style={{ color: '#818CF8', fontSize: 17 }} />}
             size="small"
             disabled={!subjectId || !semester}
             onClick={() => setHistoryModal({ open: true, student: row })}
             style={{ borderRadius: 6 }}
-          />
+          >Xem</Button>
         </Tooltip>
       ),
     },
@@ -302,25 +302,25 @@ export default function ScoreEntryPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>📊 Nhập điểm học sinh</h1>
-        <p>Bảng nhập điểm Excel-like – chỉnh sửa trực tiếp và lưu hàng loạt</p>
+        <h1>Nhập điểm học sinh</h1>
+        <p>Nhập điểm theo lớp, môn học và học kỳ.</p>
       </div>
 
       {/* Filters */}
       <div style={{
-        background: '#fff', border: '1px solid rgba(99,102,241,0.2)',
+        background: 'var(--bg-card)', border: '1px solid rgba(99,102,241,0.2)',
         borderRadius: 12, padding: '16px 20px', marginBottom: 20,
         display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center',
       }}>
         <Select
-          placeholder="🏫 Chọn lớp" style={{ width: 220 }}
+          placeholder="Chọn lớp" style={{ width: 220 }}
           value={classInstanceId}
           onChange={v => { setClassInstanceId(v); setSubjectId(null); setLocalScores({}); }}
           options={myClasses.map(c => ({ value: c.class_instance_id, label: `${c.grade}${c.class?.class_code} – ${c.year?.name}` }))}
           showSearch filterOption={(i, o) => o.label.toLowerCase().includes(i.toLowerCase())}
         />
         <Select
-          placeholder="📚 Chọn môn" style={{ width: 180 }}
+          placeholder="Chọn môn" style={{ width: 180 }}
           value={subjectId}
           disabled={!classInstanceId}
           onChange={setSubjectId}
@@ -336,9 +336,9 @@ export default function ScoreEntryPage() {
         {classScores.length > 0 && (
           <Button
             onClick={handleExportCSV}
-            style={{ borderRadius: 8, borderColor: '#10B981', color: '#10B981', fontWeight: 600 }}
+            style={{ borderRadius: 8, borderColor: 'var(--success)', color: 'var(--success)', fontWeight: 600 }}
           >
-            📥 Xuất CSV
+             Xuất CSV
           </Button>
         )}
         {classScores.length > 0 && (
@@ -349,26 +349,25 @@ export default function ScoreEntryPage() {
             disabled={isLocked}
             style={{
               marginLeft: 'auto', borderRadius: 8, fontWeight: 700,
-              background: isLocked ? '#d9d9d9' : 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+              background: isLocked ? '#d9d9d9' : 'linear-gradient(135deg, var(--primary), var(--accent))',
             }}
           >
-            💾 Lưu tất cả điểm
+             Lưu tất cả điểm
           </Button>
         )}
       </div>
 
       {isLocked && (
         <Alert
-          message="⚠️ Sổ điểm đã khóa"
-          description="Năm học này đã khóa sổ điểm học tập. Tất cả điểm số hiện ở trạng thái chỉ đọc (Read-only)."
+          message="Sổ điểm đã khóa"
+          description="Bạn có thể xem điểm nhưng không thể chỉnh sửa trong năm học này."
           type="warning" showIcon
           style={{ marginBottom: 16, borderRadius: 8 }}
         />
       )}
 
       {!classInstanceId || !subjectId ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#6B7280' }}>
-          <div style={{ fontSize: 48 }}>📋</div>
+        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-secondary)' }}>
           <div style={{ marginTop: 12, fontSize: 16 }}>Chọn lớp và môn học để bắt đầu nhập điểm</div>
         </div>
       ) : scoresLoading ? (
@@ -378,16 +377,17 @@ export default function ScoreEntryPage() {
       ) : (
         <>
           <div style={{ marginBottom: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Text style={{ color: '#94A3B8' }}>
+            <Text style={{ color: 'var(--text-muted)' }}>
               {classScores.length} học sinh · Học kỳ {semester}
             </Text>
-            <Text style={{ color: '#6B7280', fontSize: 12 }}>
+            <Text style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
               Công thức: ĐTB = (TB-TX + 2×GK + 3×CK) / 6
             </Text>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-              <span style={{ color: '#10B981', fontSize: 12 }}>● ≥ 8 xuất sắc</span>
-              <span style={{ color: '#F59E0B', fontSize: 12 }}>● 5–7.9 trung bình</span>
-              <span style={{ color: '#EF4444', fontSize: 12 }}>● &lt; 5 yếu</span>
+              <span style={{ color: 'var(--success)', fontSize: 12 }}>Giỏi: từ 8,0</span>
+              <span style={{ color: 'var(--info)', fontSize: 12 }}>Khá: từ 6,5</span>
+              <span style={{ color: 'var(--warning)', fontSize: 12 }}>Trung bình: từ 5,0</span>
+              <span style={{ color: 'var(--danger)', fontSize: 12 }}>Yếu: dưới 5,0</span>
             </div>
           </div>
 
@@ -411,7 +411,7 @@ export default function ScoreEntryPage() {
               disabled={isLocked}
               style={{ borderRadius: 10, fontWeight: 700, minWidth: 160 }}
             >
-              💾 Lưu tất cả điểm
+               Lưu tất cả điểm
             </Button>
           </div>
         </>
@@ -443,50 +443,50 @@ export default function ScoreEntryPage() {
         ) : historyData.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={<span style={{ color: '#9CA3AF' }}>Chưa có lịch sử chỉnh sửa điểm nào</span>}
+            description={<span style={{ color: 'var(--text-muted)' }}>Chưa có lịch sử chỉnh sửa điểm nào</span>}
           />
         ) : (
           <>
-            <div style={{ marginBottom: 12, color: '#6B7280', fontSize: 12 }}>
+            <div style={{ marginBottom: 12, color: 'var(--text-secondary)', fontSize: 12 }}>
               Tổng cộng <strong style={{ color: '#818CF8' }}>{historyData.length}</strong> lần thay đổi – sắp xếp mới nhất trước
             </div>
             <Timeline
               mode="left"
               items={historyData.map((h, idx) => ({
                 key: h.history_id,
-                color: idx === 0 ? '#818CF8' : '#D1D5DB',
+                color: idx === 0 ? '#818CF8' : 'var(--border)',
                 label: (
-                  <span style={{ fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     {fmtDate(h.changed_at)}
                   </span>
                 ),
                 children: (
                   <div style={{
-                    background: idx === 0 ? 'rgba(129,140,248,0.08)' : '#F9FAFB',
+                    background: idx === 0 ? 'rgba(129,140,248,0.08)' : 'var(--bg-card-hover)',
                     borderRadius: 8, padding: '10px 14px', marginBottom: 4,
-                    border: `1px solid ${idx === 0 ? 'rgba(129,140,248,0.3)' : '#E5E7EB'}`,
+                    border: `1px solid ${idx === 0 ? 'rgba(129,140,248,0.3)' : 'var(--border)'}`,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <ScoreTypeBadge label={h.score_type_label} />
                       <span style={{ fontSize: 13 }}>
                         {h.old_value !== null && h.old_value !== undefined ? (
                           <>
-                            <span style={{ color: '#EF4444', fontWeight: 700 }}>{h.old_value}</span>
-                            {' '}<ArrowRightOutlined style={{ color: '#9CA3AF', fontSize: 11 }} />{' '}
-                            <span style={{ color: '#10B981', fontWeight: 700 }}>{h.new_value}</span>
+                            <span style={{ color: 'var(--danger)', fontWeight: 700 }}>{h.old_value}</span>
+                            {' '}<ArrowRightOutlined style={{ color: 'var(--text-muted)', fontSize: 11 }} />{' '}
+                            <span style={{ color: 'var(--success)', fontWeight: 700 }}>{h.new_value}</span>
                           </>
                         ) : (
                           <>
-                            <span style={{ color: '#9CA3AF' }}>Tạo mới</span>
-                            {' '}<ArrowRightOutlined style={{ color: '#9CA3AF', fontSize: 11 }} />{' '}
-                            <span style={{ color: '#10B981', fontWeight: 700 }}>{h.new_value}</span>
+                            <span style={{ color: 'var(--text-muted)' }}>Tạo mới</span>
+                            {' '}<ArrowRightOutlined style={{ color: 'var(--text-muted)', fontSize: 11 }} />{' '}
+                            <span style={{ color: 'var(--success)', fontWeight: 700 }}>{h.new_value}</span>
                           </>
                         )}
                       </span>
                       {idx === 0 && <Tag color="blue" style={{ fontSize: 10, margin: 0 }}>Mới nhất</Tag>}
                     </div>
-                    <div style={{ marginTop: 5, fontSize: 12, color: '#6B7280' }}>
-                      👤 <strong>{h.changed_by_name}</strong>
+                    <div style={{ marginTop: 5, fontSize: 12, color: 'var(--text-secondary)' }}>
+                       <strong>{h.changed_by_name}</strong>
                     </div>
                   </div>
                 ),

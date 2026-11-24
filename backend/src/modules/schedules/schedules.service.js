@@ -6,7 +6,7 @@ const INCLUDE = {
   class_instance: {
     include: {
       class: { select: { class_code: true } },
-      year: { select: { name: true } },
+      year: { select: { year_id: true, name: true, start_date: true, end_date: true } },
     },
   },
 };
@@ -33,10 +33,17 @@ const getByTeacher = async (teacherId) => {
 const getByStudent = async (userId) => {
   const student = await prisma.student.findUnique({
     where: { user_id: Number(userId) },
-    select: { class_instance_id: true },
+    select: { class_instance_id: true, enrollments: { select: { class_instance_id: true } } },
   });
   if (!student?.class_instance_id) return [];
-  return getByClass(student.class_instance_id);
+  const classIds = student.enrollments.length
+    ? student.enrollments.map(item => item.class_instance_id)
+    : [student.class_instance_id];
+  return prisma.schedule.findMany({
+    where: { class_instance_id: { in: classIds } },
+    include: INCLUDE,
+    orderBy: [{ class_instance: { year: { start_date: 'asc' } } }, { day_of_week: 'asc' }, { period: 'asc' }],
+  });
 };
 
 /** Lấy TKB của con (phụ huynh) */

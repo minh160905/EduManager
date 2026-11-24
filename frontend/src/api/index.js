@@ -107,3 +107,15 @@ export const conductsApi = {
   getByClass: (params) => api.get('/conducts', { params }),
   upsert: (data) => api.put('/conducts/upsert', data),
 };
+
+export const examsApi = {
+  getMyOptions: () => api.get('/exams/my-options'),
+  getMine: () => api.get('/exams/my'),
+  getForStudent: (params) => api.get('/exams/student', { params }),
+  create: (data) => api.post('/exams', data),
+  remove: (id) => api.delete(`/exams/${id}`),
+};
+
+export const chatbotApi = {
+  ask: (question) => api.post('/chatbot/ask', { question }, { timeout: 35000 }),
+};

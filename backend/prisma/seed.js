@@ -441,7 +441,7 @@ async function main() {
             semester: sem,
             score_type: 'GK',
             score_value: rndScore(),
-            order_no: null,
+              order_no: 0,
             created_by: teacherId,
           },
         });
@@ -456,7 +456,7 @@ async function main() {
             semester: sem,
             score_type: 'CK',
             score_value: rndScore(),
-            order_no: null,
+              order_no: 0,
             created_by: teacherId,
           },
         });

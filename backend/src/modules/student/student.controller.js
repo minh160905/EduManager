@@ -1,5 +1,6 @@
 const svc = require('./student.service');
 const { success, badRequest } = require('../../utils/response');
+const { assertStudentAccess } = require('../../utils/access');
 
 const getReport = async (req, res, next) => {
   try {
@@ -12,10 +13,16 @@ const getReport = async (req, res, next) => {
     } else if (req.user.role === 'PARENT') {
       // Parent must specify studentId
       if (!studentId) return badRequest(res, 'studentId is required for parents');
-      targetStudentId = studentId;
+      const children = await svc.getStudentsByParentUserId(req.user.userId);
+      const requestedStudentId = Number(studentId);
+      if (!children.some((child) => child.student_id === requestedStudentId)) {
+        throw { statusCode: 403, message: 'Bạn không có quyền xem thông tin học sinh này' };
+      }
+      targetStudentId = requestedStudentId;
     } else {
       if (!studentId) return badRequest(res, 'studentId is required');
-      targetStudentId = studentId;
+      targetStudentId = Number(studentId);
+      await assertStudentAccess(req.user, targetStudentId, { yearId });
     }
 
     const report = await svc.getStudentReport(targetStudentId, semester, yearId);

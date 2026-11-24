@@ -4,7 +4,7 @@ import {
   Popconfirm, Drawer, Avatar, Spin, DatePicker, Divider,
 } from 'antd';
 import {
-  PlusOutlined, EditOutlined, LockOutlined, UnlockOutlined, SearchOutlined,
+  PlusOutlined, EditOutlined, LockOutlined, UnlockOutlined,
   UserOutlined, EyeOutlined, BookOutlined, TeamOutlined, EnvironmentOutlined,
   ManOutlined, WomanOutlined, CalendarOutlined,
 } from '@ant-design/icons';
@@ -16,33 +16,32 @@ import dayjs from 'dayjs';
 const { Text } = Typography;
 
 const ROLE_CONFIG = {
-  ADMIN:              { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',   label: 'Quản trị viên'        },
-  TEACHER:            { color: '#4F46E5', bg: 'rgba(129,140,248,0.1)', label: 'Giáo viên'            },
-  HEAD_OF_DEPARTMENT: { color: '#0F766E', bg: 'rgba(15,118,110,0.1)',  label: 'Tổ trưởng chuyên môn' },
-  PRINCIPAL:          { color: '#B91C1C', bg: 'rgba(185,28,28,0.1)',   label: 'Hiệu trưởng'          },
-  STUDENT:            { color: '#10B981', bg: 'rgba(16,185,129,0.1)',  label: 'Học sinh'             },
+  ADMIN:              { color: 'var(--warning)', bg: 'rgba(245,158,11,0.1)',   label: 'Quản trị viên'        },
+  TEACHER:            { color: 'var(--primary)', bg: 'rgba(129,140,248,0.1)', label: 'Giáo viên'            },
+  HEAD_OF_DEPARTMENT: { color: 'var(--success)', bg: 'var(--success-soft)', label: 'Tổ trưởng chuyên môn' },
+  PRINCIPAL:          { color: 'var(--danger)', bg: 'var(--danger-soft)', label: 'Hiệu trưởng' },
+  STUDENT:            { color: 'var(--success)', bg: 'rgba(16,185,129,0.1)',  label: 'Học sinh'             },
   PARENT:             { color: '#60A5FA', bg: 'rgba(96,165,250,0.1)',  label: 'Phụ huynh'            },
 };
 
 // Nhóm stat cards hiển thị trên trang
 const STAT_GROUPS = [
-  { key: 'teachers', label: 'Giáo viên & Ban giám hiệu', color: '#4F46E5', bg: 'rgba(129,140,248,0.1)', roles: ['TEACHER', 'HEAD_OF_DEPARTMENT', 'PRINCIPAL'] },
-  { key: 'students', label: 'Học sinh',                  color: '#10B981', bg: 'rgba(16,185,129,0.1)', roles: ['STUDENT'] },
+  { key: 'teachers', label: 'Giáo viên & Ban giám hiệu', color: 'var(--primary)', bg: 'rgba(129,140,248,0.1)', roles: ['TEACHER', 'HEAD_OF_DEPARTMENT', 'PRINCIPAL'] },
+  { key: 'students', label: 'Học sinh',                  color: 'var(--success)', bg: 'rgba(16,185,129,0.1)', roles: ['STUDENT'] },
   { key: 'parents',  label: 'Phụ huynh',                 color: '#60A5FA', bg: 'rgba(96,165,250,0.1)', roles: ['PARENT'] },
 ];
 
-const InfoRow = ({ icon, label, value }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-    <span style={{ color: '#4F46E5', fontSize: 14, marginTop: 1, width: 16, flexShrink: 0 }}>{icon}</span>
+const InfoRow = ({ label, value }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--border-soft)' }}>
     <div style={{ flex: 1 }}>
-      <div style={{ color: '#6B7280', fontSize: 11, marginBottom: 2 }}>{label}</div>
-      <div style={{ color: '#111827', fontWeight: 500, fontSize: 14 }}>{value || '—'}</div>
+      <div style={{ color: 'var(--text-secondary)', fontSize: 11, marginBottom: 2 }}>{label}</div>
+      <div style={{ color: 'var(--text-primary)', fontWeight: 500, fontSize: 14 }}>{value || '—'}</div>
     </div>
   </div>
 );
 
 const SectionTitle = ({ children }) => (
-  <div style={{ color: '#4F46E5', fontWeight: 700, fontSize: 11, letterSpacing: 1, margin: '18px 0 6px' }}>
+  <div style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 11, letterSpacing: 1, margin: '18px 0 6px' }}>
     {children}
   </div>
 );
@@ -201,7 +200,7 @@ export default function UsersPage() {
   const users = usersRes || [];
   const roles = (rolesRes || []).filter(r => r.role_name !== 'ADMIN');
   const role = detailUser?.role?.role_name;
-  const roleColor = ROLE_CONFIG[role]?.color || '#4F46E5';
+  const roleColor = ROLE_CONFIG[role]?.color || 'var(--primary)';
 
   // ── Render extended info in view Drawer ────────────────────────────────────
   const renderExtendedInfo = () => {
@@ -217,7 +216,7 @@ export default function UsersPage() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {subjects.length > 0 ? subjects.map((s, i) => (
               <Tag key={i} color="purple" style={{ borderRadius: 8, padding: '4px 12px', fontSize: 13 }}>{s}</Tag>
-            )) : <Text style={{ color: '#6B7280' }}>Chưa được phân công môn học</Text>}
+            )) : <Text style={{ color: 'var(--text-secondary)' }}>Chưa được phân công môn học</Text>}
           </div>
         </div>
       );
@@ -234,6 +233,8 @@ export default function UsersPage() {
             value={<Tag color={s.gender === 'Nữ' ? 'pink' : 'blue'} style={{ borderRadius: 6 }}>{s.gender || '—'}</Tag>} />
           <InfoRow icon={<EnvironmentOutlined />} label="Quê quán" value={s.hometown} />
           <InfoRow icon={<BookOutlined />} label="Lớp học" value={classLabel} />
+          {s.graduated_at && <InfoRow icon={<BookOutlined />} label="Tình trạng" value={<Tag color="gold">Đã tốt nghiệp</Tag>} />}
+          <InfoRow icon={<BookOutlined />} label="Lịch sử lớp" value={s.enrollments?.map(e => `${e.class_instance?.grade}${e.class_instance?.class?.class_code} (${e.class_instance?.year?.name})`).join(' → ')} />
           <InfoRow icon={<UserOutlined />} label="Mã học sinh" value={s.student_code} />
         </div>
       );
@@ -242,21 +243,21 @@ export default function UsersPage() {
       const children = detailUser.parent?.students || [];
       return (
         <div style={{ marginTop: 16 }}>
-          <div style={{ color: '#4F46E5', fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ color: 'var(--primary)', fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
             <TeamOutlined /> Con em ({children.length})
           </div>
           {children.length === 0
-            ? <Text style={{ color: '#6B7280' }}>Chưa liên kết học sinh nào</Text>
+            ? <Text style={{ color: 'var(--text-secondary)' }}>Chưa liên kết học sinh nào</Text>
             : children.map((sp, i) => {
               const child = sp.student;
               const ci = child?.class_instance;
               const classLabel = ci ? `Lớp ${ci.grade}${ci.class?.class_code} – ${ci.year?.name}` : '—';
               return (
                 <div key={i} style={{
-                  background: '#EEF2FF', border: '1px solid #C7D2FE',
+                  background: 'var(--primary-soft)', border: '1px solid var(--primary-border)',
                   borderRadius: 10, padding: '12px 14px', marginBottom: 10,
                 }}>
-                  <div style={{ color: '#111827', fontWeight: 700, fontSize: 15 }}>{child?.user?.full_name || '—'}</div>
+                  <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 15 }}>{child?.user?.full_name || '—'} {child?.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}</div>
                   <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
                     <Tag color="green" style={{ borderRadius: 6 }}>{classLabel}</Tag>
                     {child?.student_code && <Tag color="default" style={{ borderRadius: 6 }}>{child.student_code}</Tag>}
@@ -274,7 +275,7 @@ export default function UsersPage() {
   const columns = [
     {
       title: '#', dataIndex: 'user_id', width: 60,
-      render: (v) => <Text style={{ color: '#6B7280' }}>{v}</Text>,
+      render: (v) => <Text style={{ color: 'var(--text-secondary)' }}>{v}</Text>,
     },
     {
       title: 'Họ tên', dataIndex: 'full_name',
@@ -282,22 +283,22 @@ export default function UsersPage() {
         <Space>
           <div style={{
             width: 34, height: 34, borderRadius: 8,
-            background: `linear-gradient(135deg, ${ROLE_CONFIG[row.role?.role_name]?.color || '#4F46E5'}40, ${ROLE_CONFIG[row.role?.role_name]?.color || '#7C3AED'}20)`,
+            background: `linear-gradient(135deg, color-mix(in srgb, ${ROLE_CONFIG[row.role?.role_name]?.color || 'var(--primary)'} 25%, transparent), color-mix(in srgb, ${ROLE_CONFIG[row.role?.role_name]?.color || 'var(--accent)'} 13%, transparent))`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: ROLE_CONFIG[row.role?.role_name]?.color || '#4F46E5', fontWeight: 700, fontSize: 14,
+            color: ROLE_CONFIG[row.role?.role_name]?.color || 'var(--primary)', fontWeight: 700, fontSize: 14,
           }}>
             {name?.[0] || '?'}
           </div>
           <div>
-            <div style={{ color: '#111827', fontWeight: 600 }}>{name}</div>
-            <div style={{ color: '#6B7280', fontSize: 12 }}>@{row.username}</div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{name}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{row.username}</div>
           </div>
         </Space>
       ),
     },
     {
       title: 'Email', dataIndex: 'email',
-      render: v => <Text style={{ color: '#94A3B8' }}>{v || '—'}</Text>,
+      render: v => <Text style={{ color: 'var(--text-muted)' }}>{v || '—'}</Text>,
     },
     {
       title: 'Vai trò', dataIndex: ['role', 'role_name'],
@@ -307,7 +308,7 @@ export default function UsersPage() {
           <span style={{
             background: cfg.bg, color: cfg.color,
             padding: '2px 10px', borderRadius: 20,
-            fontSize: 12, fontWeight: 600, border: `1px solid ${cfg.color}30`,
+            fontSize: 12, fontWeight: 600, border: `1px solid color-mix(in srgb, ${cfg.color} 19%, transparent)`,
           }}>{cfg.label || role}</span>
         );
       },
@@ -315,7 +316,7 @@ export default function UsersPage() {
     {
       title: 'Trạng thái', dataIndex: 'status',
       render: (status, row) => (
-        <Popconfirm
+        <>{row.student?.graduated_at && <Tag color="gold">Đã tốt nghiệp</Tag>}<Popconfirm
           title={`${status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'} tài khoản này?`}
           onConfirm={() => statusMutation.mutate({ id: row.user_id, status: status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE' })}
           okText="Xác nhận" cancelText="Hủy"
@@ -325,7 +326,7 @@ export default function UsersPage() {
             style={{ cursor: 'pointer', borderRadius: 6 }}>
             {status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
           </Tag>
-        </Popconfirm>
+        </Popconfirm></>
       ),
     },
     {
@@ -333,9 +334,9 @@ export default function UsersPage() {
       render: (_, row) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} onClick={() => openDetail(row.user_id)}
-            style={{ borderRadius: 6, borderColor: '#10B981', color: '#10B981' }}>Xem</Button>
+            style={{ borderRadius: 6, borderColor: 'var(--success)', color: 'var(--success)' }}>Xem</Button>
           <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenEdit(row)}
-            style={{ borderRadius: 6, borderColor: '#4F46E5', color: '#4F46E5' }}>Sửa</Button>
+            style={{ borderRadius: 6, borderColor: 'var(--primary)', color: 'var(--primary)' }}>Sửa</Button>
         </Space>
       ),
     },
@@ -344,14 +345,14 @@ export default function UsersPage() {
   return (
     <div>
       <div className="page-header">
-        <h1>👥 Quản lý người dùng</h1>
+        <h1>Quản lý người dùng</h1>
         <p>Tạo và quản lý tài khoản cho tất cả vai trò trong hệ thống</p>
       </div>
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
         {STAT_GROUPS.map(grp => (
-          <div key={grp.key} className="stat-card" style={{ background: grp.bg, borderColor: `${grp.color}30` }}>
+          <div key={grp.key} className="stat-card" style={{ background: grp.bg, borderColor: `color-mix(in srgb, ${grp.color} 19%, transparent)` }}>
             <div className="stat-value" style={{ color: grp.color }}>
               {users.filter(u => grp.roles.includes(u.role?.role_name)).length}
             </div>
@@ -361,11 +362,10 @@ export default function UsersPage() {
       </div>
 
       {/* Toolbar */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+      <div className="page-toolbar" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16, alignItems: 'center' }}>
         <Input
-          prefix={<SearchOutlined style={{ color: '#6B7280' }} />}
-          placeholder="Tìm kiếm tên, username, email..."
-          style={{ maxWidth: 300, flex: 1 }}
+          placeholder="Tìm tên, tài khoản hoặc email"
+          style={{ maxWidth: 300, minWidth: 180, flex: '1 1 220px' }}
           onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
           allowClear
         />
@@ -393,6 +393,7 @@ export default function UsersPage() {
 
       <Table dataSource={users} columns={columns} loading={isLoading} rowKey="user_id"
         pagination={{ pageSize: 15, showSizeChanger: true, showTotal: (t) => `Tổng ${t} người dùng` }}
+        scroll={{ x: 900 }}
         size="middle" />
 
       {/* ── Drawer: Xem chi tiết ── */}
@@ -404,19 +405,19 @@ export default function UsersPage() {
           detailUser ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <Avatar size={42}
-                style={{ background: `linear-gradient(135deg, ${roleColor}, ${roleColor}99)`, fontWeight: 700, fontSize: 18 }}>
+                style={{ background: `linear-gradient(135deg, ${roleColor}, color-mix(in srgb, ${roleColor} 60%, transparent))`, fontWeight: 700, fontSize: 18 }}>
                 {detailUser.full_name?.[0] || '?'}
               </Avatar>
               <div>
-                <div style={{ color: '#111827', fontWeight: 700, fontSize: 15 }}>{detailUser.full_name}</div>
-                <div style={{ color: '#6B7280', fontSize: 12 }}>@{detailUser.username}</div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: 15 }}>{detailUser.full_name}</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>@{detailUser.username}</div>
               </div>
             </div>
           ) : 'Chi tiết người dùng'
         }
         styles={{
-          header: { background: '#fff', borderBottom: '1px solid #E5E7EB' },
-          body: { background: '#F8FAFF', padding: '20px' },
+          header: { background: 'var(--bg-card)', borderBottom: '1px solid var(--border)' },
+          body: { background: 'var(--bg-page)', padding: '20px' },
         }}
       >
         {detailLoading ? (
@@ -427,18 +428,18 @@ export default function UsersPage() {
               <span style={{
                 background: ROLE_CONFIG[role]?.bg, color: ROLE_CONFIG[role]?.color,
                 padding: '4px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-                border: `1px solid ${ROLE_CONFIG[role]?.color}40`,
+                border: `1px solid color-mix(in srgb, ${ROLE_CONFIG[role]?.color} 25%, transparent)`,
               }}>{ROLE_CONFIG[role]?.label || role}</span>
-              <span style={{ marginLeft: 8, color: detailUser.status === 'ACTIVE' ? '#10B981' : '#EF4444', fontSize: 13 }}>
-                {detailUser.status === 'ACTIVE' ? '● Hoạt động' : '● Đã khóa'}
+              <span style={{ marginLeft: 8, color: detailUser.status === 'ACTIVE' ? 'var(--success)' : 'var(--danger)', fontSize: 13 }}>
+                {detailUser.status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
               </span>
             </div>
             <SectionTitle>THÔNG TIN CƠ BẢN</SectionTitle>
             <InfoRow icon={<UserOutlined />} label="Họ và tên" value={detailUser.full_name} />
-            <InfoRow icon="📧" label="Email" value={detailUser.email} />
-            <InfoRow icon="📞" label="Số điện thoại" value={detailUser.phone} />
-            <InfoRow icon="🔑" label="Tên đăng nhập" value={detailUser.username} />
-            <InfoRow icon="📅" label="Ngày tạo" value={dayjs(detailUser.created_at).format('DD/MM/YYYY HH:mm')} />
+            <InfoRow icon="" label="Email" value={detailUser.email} />
+            <InfoRow icon="" label="Số điện thoại" value={detailUser.phone} />
+            <InfoRow icon="" label="Tên đăng nhập" value={detailUser.username} />
+            <InfoRow icon="" label="Ngày tạo" value={dayjs(detailUser.created_at).format('DD/MM/YYYY HH:mm')} />
             {(role === 'TEACHER' || role === 'STUDENT' || role === 'PARENT') && (
               <div style={{ marginTop: 20, borderTop: '1px solid rgba(99,102,241,0.2)', paddingTop: 16 }}>
                 <SectionTitle>
@@ -456,8 +457,8 @@ export default function UsersPage() {
         open={modalOpen}
         onCancel={() => { setModalOpen(false); setEditUser(null); setEditDetail(null); }}
         title={
-          <span style={{ color: '#111827' }}>
-            {editUser ? `✏️ Chỉnh sửa – ${editUser.full_name}` : '➕ Tạo tài khoản mới'}
+          <span style={{ color: 'var(--text-primary)' }}>
+            {editUser ? ` Chỉnh sửa – ${editUser.full_name}` : ' Tạo tài khoản mới'}
           </span>
         }
         footer={null}
@@ -515,7 +516,7 @@ export default function UsersPage() {
           {/* ── THÔNG TIN HỌC SINH (hiện khi chọn STUDENT) ── */}
           {activeRoleName === 'STUDENT' && (
             <>
-              <Divider style={{ borderColor: '#E5E7EB', margin: '16px 0 8px' }} />
+              <Divider style={{ borderColor: 'var(--border)', margin: '16px 0 8px' }} />
               <SectionTitle>THÔNG TIN HỌC SINH</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <Form.Item name="student_code" label="Mã học sinh">
@@ -523,7 +524,7 @@ export default function UsersPage() {
                 </Form.Item>
                 <Form.Item name="gender" label="Giới tính">
                   <Select placeholder="Chọn giới tính" allowClear
-                    options={[{ value: 'Nam', label: '♂ Nam' }, { value: 'Nữ', label: '♀ Nữ' }]} />
+                    options={[{ value: 'Nam', label: ' Nam' }, { value: 'Nữ', label: ' Nữ' }]} />
                 </Form.Item>
                 <Form.Item name="date_of_birth" label="Ngày sinh">
                   <DatePicker
@@ -542,7 +543,7 @@ export default function UsersPage() {
                 </Form.Item>
               </div>
               <Form.Item name="hometown" label="Quê quán">
-                <Input placeholder="Hà Nội, Đà Nẵng..." prefix={<EnvironmentOutlined style={{ color: '#4F46E5' }} />} />
+                <Input placeholder="Hà Nội, Đà Nẵng..." prefix={<EnvironmentOutlined style={{ color: 'var(--primary)' }} />} />
               </Form.Item>
             </>
           )}
@@ -550,7 +551,7 @@ export default function UsersPage() {
           {/* ── LIÊN KẾT CON EM (hiện khi chọn PARENT) ── */}
           {activeRoleName === 'PARENT' && (
             <>
-              <Divider style={{ borderColor: '#E5E7EB', margin: '16px 0 8px' }} />
+              <Divider style={{ borderColor: 'var(--border)', margin: '16px 0 8px' }} />
               <SectionTitle>LIÊN KẾT CON EM</SectionTitle>
               <Form.Item name="student_ids" label="Chọn con em học sinh">
                 <Select

@@ -7,7 +7,7 @@ const getClassScores = async (req, res, next) => {
     if (!classInstanceId || !subjectId || !semester) {
       return badRequest(res, 'classInstanceId, subjectId, semester are required');
     }
-    return success(res, await svc.getClassScores({ classInstanceId, subjectId, semester }));
+    return success(res, await svc.getClassScores({ classInstanceId, subjectId, semester }, req.user));
   } catch (e) { next(e); }
 };
 
@@ -40,7 +40,7 @@ const getStudentScoreHistory = async (req, res, next) => {
     if (!studentId || !subjectId || !semester) {
       return badRequest(res, 'studentId, subjectId, semester are required');
     }
-    const data = await svc.getStudentScoreHistory({ studentId, subjectId, semester, yearId });
+    const data = await svc.getStudentScoreHistory({ studentId, subjectId, semester, yearId }, req.user);
     return success(res, data);
   } catch (e) { next(e); }
 };

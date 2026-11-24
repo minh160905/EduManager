@@ -1,25 +1,48 @@
 const prisma = require('../../config/prisma');
+const { getAccessibleClassIds } = require('../../utils/access');
 
-const create = async (data, createdBy) => {
+const create = async (data, user) => {
   const { title, content, receiver_ids } = data;
-
-  const notification = await prisma.notification.create({
-    data: { title, content, created_by: createdBy },
-  });
-
-  if (receiver_ids && receiver_ids.length > 0) {
-    await prisma.notificationReceiver.createMany({
-      data: receiver_ids.map(uid => ({
-        notification_id: notification.notification_id,
-        user_id: Number(uid),
-        is_read: false,
-      })),
-    });
+  if (!title || !String(title).trim() || !content || !String(content).trim()) {
+    throw { statusCode: 400, message: 'Tiêu đề và nội dung thông báo không được để trống' };
+  }
+  if (!Array.isArray(receiver_ids) || receiver_ids.length === 0) {
+    throw { statusCode: 400, message: 'Thông báo phải có ít nhất một người nhận' };
   }
 
-  return prisma.notification.findUnique({
-    where: { notification_id: notification.notification_id },
-    include: { creator: { select: { full_name: true } }, _count: { select: { receivers: true } } },
+  const recipientIds = [...new Set(receiver_ids.map(Number))];
+  if (recipientIds.some((id) => !Number.isInteger(id))) {
+    throw { statusCode: 400, message: 'Danh sách người nhận không hợp lệ' };
+  }
+
+  const allowedRecipients = await getRecipients(user);
+  const allowedIds = new Set([
+    ...allowedRecipients.students.map((student) => student.user_id),
+    ...allowedRecipients.parents.map((parent) => parent.user_id),
+  ]);
+  const forbiddenIds = recipientIds.filter((id) => !allowedIds.has(id));
+  if (forbiddenIds.length > 0) {
+    throw { statusCode: 403, message: 'Danh sách người nhận chứa tài khoản ngoài phạm vi phụ trách' };
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const notification = await tx.notification.create({
+      data: { title: String(title).trim(), content: String(content).trim(), created_by: Number(user.userId) },
+    });
+
+    await tx.notificationReceiver.createMany({
+      data: recipientIds.map((uid) => ({
+        notification_id: notification.notification_id,
+        user_id: uid,
+        is_read: false,
+      })),
+      skipDuplicates: true,
+    });
+
+    return tx.notification.findUnique({
+      where: { notification_id: notification.notification_id },
+      include: { creator: { select: { full_name: true } }, _count: { select: { receivers: true } } },
+    });
   });
 };
 
@@ -67,31 +90,17 @@ const getSentNotifications = async (createdBy) => {
  *  - Học sinh của các lớp GV phụ trách (hoặc chủ nhiệm)
  *  - Phụ huynh của các học sinh đó
  */
-const getRecipients = async (teacherId) => {
-  // Lấy tất cả class_instance_id mà GV này phụ trách
-  const assignments = await prisma.teacherAssignment.findMany({
-    where: { teacher_id: Number(teacherId) },
-    select: { class_instance_id: true },
-  });
-
-  // Cộng thêm lớp GVCN
-  const homeroomClasses = await prisma.classInstance.findMany({
-    where: { homeroom_teacher_id: Number(teacherId) },
-    select: { class_instance_id: true },
-  });
-
-  const allInstanceIds = [
-    ...new Set([
-      ...assignments.map(a => a.class_instance_id),
-      ...homeroomClasses.map(c => c.class_instance_id),
-    ]),
-  ];
-
-  if (allInstanceIds.length === 0) return { students: [], parents: [] };
+const getRecipients = async (user) => {
+  const accessibleClassIds = await getAccessibleClassIds(user);
+  if (Array.isArray(accessibleClassIds) && accessibleClassIds.length === 0) {
+    return { students: [], parents: [] };
+  }
 
   // Lấy học sinh từ các lớp đó
   const students = await prisma.student.findMany({
-    where: { class_instance_id: { in: allInstanceIds } },
+    where: accessibleClassIds === null
+      ? {}
+      : { class_instance_id: { in: accessibleClassIds } },
     select: {
       student_id: true,
       student_code: true,
