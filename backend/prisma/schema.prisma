@@ -118,6 +118,7 @@ model Student {
   comments     Comment[]
   achievements Achievement[]
   conducts     Conduct[]
+  lesson_notes LessonNote[]
 
   @@map("students")
 }
@@ -357,9 +358,29 @@ model Schedule {
   class_instance ClassInstance @relation(fields: [class_instance_id], references: [class_instance_id])
   subject        Subject       @relation(fields: [subject_id], references: [subject_id])
   teacher        User          @relation("ScheduleTeacher", fields: [teacher_id], references: [user_id])
+  lesson_notes   LessonNote[]
 
   @@unique([class_instance_id, day_of_week, period])
   @@map("schedules")
+}
+
+model LessonNote {
+  note_id     Int      @id @default(autoincrement())
+  student_id  Int
+  schedule_id Int
+  lesson_date DateTime @db.Date
+  content     String   @db.Text
+  completed   Boolean  @default(false)
+  reminded_at DateTime?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  student  Student  @relation(fields: [student_id], references: [student_id], onDelete: Cascade)
+  schedule Schedule @relation(fields: [schedule_id], references: [schedule_id], onDelete: Cascade)
+
+  @@unique([student_id, schedule_id, lesson_date])
+  @@index([lesson_date, completed, reminded_at])
+  @@map("lesson_notes")
 }
 
 model ExamSchedule {

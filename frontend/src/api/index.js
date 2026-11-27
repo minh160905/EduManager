@@ -116,6 +116,11 @@ export const examsApi = {
   remove: (id) => api.delete(`/exams/${id}`),
 };
 
+export const lessonNotesApi = {
+  getAll: (params) => api.get('/lesson-notes', { params }),
+  save: (data) => api.put('/lesson-notes', data),
+};
+
 export const chatbotApi = {
   ask: (question) => api.post('/chatbot/ask', { question }, { timeout: 35000 }),
 };

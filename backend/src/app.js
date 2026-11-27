@@ -20,6 +20,8 @@ const schedulesRouter = require('./modules/schedules/schedules.router');
 const departmentsRouter = require('./modules/departments/departments.router');
 const examsRouter = require('./modules/exams/exams.router');
 const chatbotRouter = require('./modules/chatbot/chatbot.router');
+const lessonNotesRouter = require('./modules/lesson-notes/lesson-notes.router');
+const { sendDueReminders } = require('./modules/lesson-notes/lesson-notes.service');
 const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -53,6 +55,7 @@ app.use('/api/schedules', schedulesRouter);
 app.use('/api/departments', departmentsRouter);
 app.use('/api/exams', examsRouter);
 app.use('/api/chatbot', chatbotRouter);
+app.use('/api/lesson-notes', lessonNotesRouter);
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
@@ -68,5 +71,9 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`📚 Environment: ${process.env.NODE_ENV}`);
 });
+
+const runReminders = () => sendDueReminders().catch((error) => console.error('Không thể gửi nhắc nhở:', error.message));
+runReminders();
+setInterval(runReminders, 60 * 1000).unref();
 
 module.exports = app;

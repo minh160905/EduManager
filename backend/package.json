@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "nodemon --exec \"node --use-system-ca\" src/app.js",
     "start": "node --use-system-ca src/app.js",
-    "test": "node --test tests/access.test.js tests/exams.test.js tests/chatbot.test.js",
+    "test": "node --test tests/access.test.js tests/exams.test.js tests/chatbot.test.js tests/lesson-notes.test.js",
     "db:push": "prisma db push",
     "db:create-exam-table": "node prisma/create_exam_schedule_table.js",
+    "db:create-lesson-notes-table": "node prisma/create_lesson_notes_table.js",
     "db:generate": "prisma generate",
     "db:seed": "node prisma/seed.js",
     "db:seed-multi-year": "node prisma/seed_multi_year_demo.js",

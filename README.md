@@ -184,3 +184,9 @@ GET  /api/notifications/unread-count  # Số chưa đọc (badge)
 | Achievement review | ❌ | ✅ (GVCN) | ❌ | ❌ |
 | View own scores | ❌ | ❌ | ✅ | ❌ |
 | View child scores | ❌ | ❌ | ❌ | ✅ |
+
+## Ghi chú tiết học
+
+Sau khi cập nhật mã nguồn, chạy `npm run db:generate` và `npm run db:create-lesson-notes-table` trong thư mục `backend`, rồi khởi động lại backend. Học sinh chọn một tiết trong thời khóa biểu để lưu ghi chú theo ngày học và cập nhật trạng thái hoàn thành.
+
+Backend kiểm tra ghi chú mỗi phút và gửi một thông báo trong ứng dụng từ 24 giờ trước giờ bắt đầu tiết học, theo giờ Việt Nam, nếu ghi chú chưa hoàn thành. Backend phải hoạt động trong khoảng này; khi khởi động lại trước tiết học, các thông báo đến hạn chưa gửi sẽ được xử lý. Thông báo không được gửi sau khi tiết học bắt đầu.

@@ -34,6 +34,7 @@ export default function TimetableGrid({
   weekStart = null,
   emptyDescription = 'Chưa có thời khoá biểu',
   exams = [],
+  lessonNotes = [],
 }) {
   if (loading) return <div style={{ textAlign: 'center', padding: 60 }}><Spin size="large" /></div>;
   if (!schedules.length && !exams.length && !onCellClick) return <Empty description={<span style={{ color: 'var(--text-muted)' }}>{emptyDescription}</span>} style={{ padding: 40 }} />;
@@ -137,6 +138,8 @@ export default function TimetableGrid({
                   const cell = map[`${d.value}-${period}`];
                   const clr = cell ? LESSON_STYLE : null;
                   const isMyLesson = highlightTeacherId && cell?.teacher_id === highlightTeacherId;
+                  const lessonDate = monday?.add(d.value - 2, 'day').format('YYYY-MM-DD');
+                  const note = cell && lessonNotes.find(n => n.schedule_id === cell.schedule_id && n.lesson_date?.slice(0, 10) === lessonDate);
 
                   return (
                     <td key={d.value} style={{
@@ -145,11 +148,20 @@ export default function TimetableGrid({
                       transition: 'background 0.15s',
                       background: isMyLesson ? 'var(--primary-soft)' : undefined,
                     }}
+                      role={onLessonClick && cell ? 'button' : undefined}
+                      tabIndex={onLessonClick && cell ? 0 : undefined}
+                      aria-label={onLessonClick && cell ? `Ghi chú ${cell.subject?.subject_name}, ${lessonDate}` : undefined}
+                      onKeyDown={e => {
+                        if (onLessonClick && cell && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          onLessonClick(cell, lessonDate);
+                        }
+                      }}
                       onClick={() => {
                         if (isEditable) {
                           onCellClick(d.value, period, cell);
                         } else if (onLessonClick && cell) {
-                          onLessonClick(cell);
+                          onLessonClick(cell, lessonDate);
                         }
                       }}
                       onMouseEnter={e => { if (isEditable || (onLessonClick && cell)) e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
@@ -182,6 +194,9 @@ export default function TimetableGrid({
                                 {cell.room}
                               </div>
                             )}
+                            {note && <div style={{ color: note.completed ? 'var(--success)' : 'var(--warning)', fontSize: 11, fontWeight: 600 }}>
+                              {note.completed ? 'Ghi chú: Đã hoàn thành' : 'Ghi chú: Chưa hoàn thành'}
+                            </div>}
                           </div>
                         </Tooltip>
                       ) : (
